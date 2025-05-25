@@ -430,6 +430,41 @@
             display: block !important;
         }
 
+        /* مؤشر التحميل */
+        .loading-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4facfe;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loading-text {
+            color: white;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* تحسينات للهواتف */
         @media (max-width: 768px) {
             body {
@@ -465,7 +500,7 @@
             }
             
             .checkbox-group {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr;
                 gap: 8px;
             }
             
@@ -504,72 +539,6 @@
                 margin-bottom: -500px;
             }
         }
-
-        /* تحسينات إضافية للهواتف */
-        @media (max-width: 480px) {
-            .checkbox-group {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-control {
-                font-size: 16px;
-                padding: 12px;
-            }
-            
-            .range-container {
-                flex-direction: column;
-                gap: 10px;
-                align-items: stretch;
-            }
-            
-            .range-value {
-                align-self: center;
-            }
-        }
-
-        /* تظليل عند الضغط على العناصر التفاعلية (للهواتف) */
-        .touch-highlight {
-            transition: all 0.2s ease;
-        }
-        .touch-highlight:active {
-            background-color: rgba(79, 172, 254, 0.1);
-            transform: scale(0.98);
-        }
-
-        /* مؤشر التحميل */
-        .loading-indicator {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        
-        .loading-spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #4facfe;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        
-        .loading-text {
-            color: white;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -579,7 +548,7 @@
         </div>
         
         <div class="status-bar" id="status-bar">
-            📅 2025-05-25 | ⏰ 21:19:31 UTC | 👤 gbrw | 🖨️ نظام طباعة محسن مع عرض المحتوى
+            📅 2025-05-25 | ⏰ 21:33:40 UTC | 👤 gbrw | 🖨️ نظام طباعة محسن مع عرض المحتوى
         </div>
         
         <div class="main-content">
@@ -622,15 +591,15 @@
                     <div class="form-group">
                         <label>خصائص النص:</label>
                         <div class="checkbox-group">
-                            <div class="checkbox-item touch-highlight">
+                            <div class="checkbox-item">
                                 <input type="checkbox" id="display-bold" checked>
                                 <label for="display-bold">عريض</label>
                             </div>
-                            <div class="checkbox-item touch-highlight">
+                            <div class="checkbox-item">
                                 <input type="checkbox" id="display-italic">
                                 <label for="display-italic">مائل</label>
                             </div>
-                            <div class="checkbox-item touch-highlight">
+                            <div class="checkbox-item">
                                 <input type="checkbox" id="display-underline">
                                 <label for="display-underline">تحته خط</label>
                             </div>
@@ -676,15 +645,15 @@
                     <div class="form-group">
                         <label>خصائص النص:</label>
                         <div class="checkbox-group">
-                            <div class="checkbox-item touch-highlight">
+                            <div class="checkbox-item">
                                 <input type="checkbox" id="product-bold" checked>
                                 <label for="product-bold">عريض</label>
                             </div>
-                            <div class="checkbox-item touch-highlight">
+                            <div class="checkbox-item">
                                 <input type="checkbox" id="product-italic">
                                 <label for="product-italic">مائل</label>
                             </div>
-                            <div class="checkbox-item touch-highlight">
+                            <div class="checkbox-item">
                                 <input type="checkbox" id="product-underline">
                                 <label for="product-underline">تحته خط</label>
                             </div>
@@ -730,15 +699,15 @@
                     <div class="form-group">
                         <label>خصائص النص:</label>
                         <div class="checkbox-group">
-                            <div class="checkbox-item touch-highlight">
+                            <div class="checkbox-item">
                                 <input type="checkbox" id="price-bold" checked>
                                 <label for="price-bold">عريض</label>
                             </div>
-                            <div class="checkbox-item touch-highlight">
+                            <div class="checkbox-item">
                                 <input type="checkbox" id="price-italic">
                                 <label for="price-italic">مائل</label>
                             </div>
-                            <div class="checkbox-item touch-highlight">
+                            <div class="checkbox-item">
                                 <input type="checkbox" id="price-underline">
                                 <label for="price-underline">تحته خط</label>
                             </div>
@@ -771,11 +740,11 @@
                     <div class="form-group">
                         <label>اتجاه الصفحة:</label>
                         <div class="orientation-selector">
-                            <div class="orientation-option touch-highlight selected" data-orientation="portrait">
+                            <div class="orientation-option selected" data-orientation="portrait">
                                 📄 عمودي<br>
                                 <small>A4 عادي</small>
                             </div>
-                            <div class="orientation-option touch-highlight" data-orientation="landscape">
+                            <div class="orientation-option" data-orientation="landscape">
                                 📃 أفقي<br>
                                 <small>A4 مقلوب</small>
                             </div>
@@ -784,8 +753,8 @@
                     
                     <!-- أزرار الطباعة -->
                     <div class="action-buttons">
-                        <button class="btn-primary touch-highlight" id="print-button">🖨️ طباعة مباشرة</button>
-                        <button class="btn-secondary touch-highlight" id="pdf-button">📄 تحميل PDF</button>
+                        <button class="btn-primary" id="print-button">🖨️ طباعة مباشرة</button>
+                        <button class="btn-secondary" id="pdf-button">📄 تحميل PDF</button>
                     </div>
                 </div>
             </div>
@@ -810,7 +779,7 @@
         <div class="hidden-print-text" id="product-hidden"></div>
         <div class="hidden-print-text" id="price-hidden"></div>
     </div>
-
+    
     <!-- مؤشر التحميل -->
     <div class="loading-indicator" id="loading-indicator">
         <div class="loading-spinner"></div>
@@ -819,7 +788,7 @@
 
     <script>
         // متغيرات عامة
-        let backgroundImageUrl = 'images/alfajr.png'; // استخدام الصورة من المجلد
+        let backgroundImageUrl = 'alfajr.png'; // استخدام الصورة من المجلد
         let printInProgress = false;
         let currentOrientation = 'portrait';
 
@@ -827,27 +796,36 @@
         const systemInfo = {
             user: 'gbrw',
             date: '2025-05-25',
-            time: '21:19:31',
+            time: '21:33:40',
             timezone: 'UTC'
         };
 
         console.log(`🚀 نظام طباعة محسن - ${systemInfo.user} - ${systemInfo.date} ${systemInfo.time} ${systemInfo.timezone}`);
+
+        // إظهار / إخفاء مؤشر التحميل
+        function showLoading(message = 'جاري المعالجة...') {
+            const indicator = document.getElementById('loading-indicator');
+            if (indicator) {
+                indicator.style.display = 'flex';
+                const textElement = indicator.querySelector('.loading-text');
+                if (textElement) {
+                    textElement.textContent = message;
+                }
+            }
+        }
+        
+        function hideLoading() {
+            const indicator = document.getElementById('loading-indicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
+        }
 
         // تحديث شريط الحالة
         function updateStatus(message) {
             const statusBar = document.getElementById('status-bar');
             const currentTime = new Date().toLocaleString('ar-SA');
             statusBar.textContent = `📅 ${systemInfo.date} | ⏰ ${systemInfo.time} ${systemInfo.timezone} | 👤 ${systemInfo.user} | ${message}`;
-        }
-
-        // إظهار / إخفاء مؤشر التحميل
-        function showLoading(message = 'جاري المعالجة...') {
-            document.getElementById('loading-indicator').style.display = 'flex';
-            document.querySelector('.loading-text').textContent = message;
-        }
-        
-        function hideLoading() {
-            document.getElementById('loading-indicator').style.display = 'none';
         }
 
         // تحديث قيمة الشفافية
@@ -1024,7 +1002,7 @@
                 // إنشاء نافذة طباعة
                 const printWindow = window.open('', '_blank');
                 
-const printHTML = `
+                const printHTML = `
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -1286,7 +1264,9 @@ const printHTML = `
                 
                 // تعديل حجم المعاينة للهواتف
                 const previewContainer = document.getElementById('preview-container');
-                previewContainer.style.minHeight = '280px';
+                if (previewContainer) {
+                    previewContainer.style.minHeight = '280px';
+                }
                 
                 // تحسين أداء الهاتف
                 document.body.style.overflowX = 'hidden';
@@ -1295,11 +1275,6 @@ const printHTML = `
 
         // تشغيل تحسينات الهاتف عند تغيير حجم النافذة
         window.addEventListener('resize', optimizeMobileExperience);
-
-        // إضافة دعم الوضع المظلم (إذا كان الهاتف يدعم ذلك)
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.style.background = 'linear-gradient(135deg, #434343 0%, #000000 100%)';
-        }
 
         // إظهار رسالة ترحيبية
         console.log('✨ تم تحميل نظام طباعة "الفجر" بنجاح مع خلفية افتراضية وشفافية 15%');
