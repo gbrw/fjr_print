@@ -430,41 +430,6 @@
             display: block !important;
         }
 
-        /* مؤشر التحميل */
-        .loading-indicator {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        
-        .loading-spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #4facfe;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        
-        .loading-text {
-            color: white;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         /* تحسينات للهواتف */
         @media (max-width: 768px) {
             body {
@@ -548,7 +513,7 @@
         </div>
         
         <div class="status-bar" id="status-bar">
-            📅 2025-05-25 | ⏰ 21:33:40 UTC | 👤 gbrw | 🖨️ نظام طباعة محسن مع عرض المحتوى
+            📅 2025-05-25 | ⏰ 20:47:03 UTC | 👤 ghaith | 🖨️ نظام طباعة محسن مع عرض المحتوى
         </div>
         
         <div class="main-content">
@@ -728,8 +693,8 @@
                     <div class="form-group">
                         <label for="background-opacity">شفافية الخلفية:</label>
                         <div class="range-container">
-                            <input type="range" id="background-opacity" class="range-slider" min="0" max="100" value="15">
-                            <span class="range-value" id="opacity-value">15%</span>
+                            <input type="range" id="background-opacity" class="range-slider" min="0" max="100" value="80">
+                            <span class="range-value" id="opacity-value">80%</span>
                         </div>
                     </div>
                 </div>
@@ -779,53 +744,28 @@
         <div class="hidden-print-text" id="product-hidden"></div>
         <div class="hidden-print-text" id="price-hidden"></div>
     </div>
-    
-    <!-- مؤشر التحميل -->
-    <div class="loading-indicator" id="loading-indicator">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">جاري المعالجة...</div>
-    </div>
 
     <script>
         // متغيرات عامة
-        let backgroundImageUrl = 'images/alfajr.png'; // استخدام الصورة من المجلد
+        let backgroundImageUrl = '';
         let printInProgress = false;
         let currentOrientation = 'portrait';
 
         // معلومات المستخدم والنظام
         const systemInfo = {
-            user: 'gbrw',
+            user: 'ghaith',
             date: '2025-05-25',
-            time: '21:33:40',
+            time: '20:47:03',
             timezone: 'UTC'
         };
 
         console.log(`🚀 نظام طباعة محسن - ${systemInfo.user} - ${systemInfo.date} ${systemInfo.time} ${systemInfo.timezone}`);
 
-        // إظهار / إخفاء مؤشر التحميل
-        function showLoading(message = 'جاري المعالجة...') {
-            const indicator = document.getElementById('loading-indicator');
-            if (indicator) {
-                indicator.style.display = 'flex';
-                const textElement = indicator.querySelector('.loading-text');
-                if (textElement) {
-                    textElement.textContent = message;
-                }
-            }
-        }
-        
-        function hideLoading() {
-            const indicator = document.getElementById('loading-indicator');
-            if (indicator) {
-                indicator.style.display = 'none';
-            }
-        }
-
         // تحديث شريط الحالة
         function updateStatus(message) {
             const statusBar = document.getElementById('status-bar');
             const currentTime = new Date().toLocaleString('ar-SA');
-            statusBar.textContent = `📅 ${systemInfo.date} | ⏰ ${systemInfo.time} ${systemInfo.timezone} | 👤 ${systemInfo.user} | ${message}`;
+            statusBar.textContent = `📅 ${systemInfo.date} | ⏰ ${currentTime} | 👤 ${systemInfo.user} | ${message}`;
         }
 
         // تحديث قيمة الشفافية
@@ -938,7 +878,6 @@
             const printButton = document.getElementById('print-button');
             printButton.disabled = true;
             printButton.textContent = '🔄 جاري الطباعة...';
-            showLoading('جاري تجهيز الطباعة...');
             updateStatus('🖨️ بدء عملية الطباعة...');
 
             try {
@@ -959,7 +898,6 @@
                 hiddenArea.style.opacity = '1';
                 hiddenArea.style.visibility = 'visible';
 
-                showLoading('جاري تصوير المحتوى...');
                 updateStatus('📷 تصوير المحتوى...');
                 await new Promise(resolve => setTimeout(resolve, 300));
 
@@ -993,7 +931,6 @@
                 hiddenArea.style.zIndex = '1';
 
                 console.log(`✅ تم التصوير - الأبعاد: ${canvas.width}x${canvas.height}`);
-                showLoading('جاري إعداد نافذة الطباعة...');
                 updateStatus('🎯 تم التصوير، جاري إعداد الطباعة...');
 
                 // إنشاء صورة للطباعة
@@ -1007,7 +944,6 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>طباعة - ${systemInfo.user} - ${systemInfo.date} ${systemInfo.time}</title>
     <style>
         @page {
@@ -1037,137 +973,88 @@
                 max-height: 100% !important;
                 object-fit: contain !important;
             }
-            .no-print {
-                display: none !important;
-            }
         }
         body {
             margin: 0;
             padding: 0;
-            background: #f0f0f0;
+            background: white;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .print-container {
             width: 100%;
-            max-width: 800px;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 20px;
-            background: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            border-radius: 8px;
-            padding: 10px;
         }
         .print-image {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
         }
-        .controls {
-            margin: 20px;
-            text-align: center;
-        }
-        .btn {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 10px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin: 20px;
-            color: #333;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        .header p {
-            margin: 5px 0;
-            color: #666;
-        }
     </style>
 </head>
 <body>
-    <div class="header no-print">
-        <h1>الفجر "عروض خاصة"</h1>
-        <p>اضغط على زر الطباعة أدناه أو استخدم Ctrl+P (Cmd+P على Mac) للطباعة</p>
-    </div>
-    
     <div class="print-container">
-        <img src="${imageData}" alt="محتوى الطباعة" class="print-image">
+        <img src="${imageData}" alt="طباعة" class="print-image">
     </div>
-    
-    <div class="controls no-print">
-        <button class="btn" onclick="window.print()">🖨️ طباعة الآن</button>
-        <button class="btn" onclick="window.close()">إغلاق</button>
-    </div>
-    
     <script>
         window.onload = function() {
-            // توجيه المستخدم للطباعة تلقائياً بعد ثانيتين
             setTimeout(function() {
-                // التعليق هنا إذا لم ترغب في الطباعة التلقائية
-                // window.print();
-            }, 2000);
+                window.print();
+                setTimeout(function() {
+                    window.close();
+                }, 500);
+            }, 500);
         };
     </script>
 </body>
 </html>`;
 
+                printWindow.document.open();
                 printWindow.document.write(printHTML);
                 printWindow.document.close();
-                
-                hideLoading();
-                updateStatus('✅ تم فتح نافذة الطباعة بنجاح');
-                
-                console.log('🖨️ تم فتح نافذة الطباعة');
-                
+
+                updateStatus('🖨️ تمت عملية الطباعة بنجاح');
+                console.log('✅ تمت عملية الطباعة بنجاح');
             } catch (error) {
-                console.error('❌ خطأ في عملية الطباعة:', error);
+                console.error('❌ خطأ أثناء الطباعة:', error);
                 updateStatus('❌ حدث خطأ أثناء الطباعة');
-                hideLoading();
-                alert('حدث خطأ أثناء الطباعة. يرجى المحاولة مرة أخرى.');
+                alert('حدث خطأ أثناء الطباعة: ' + error.message);
             } finally {
+                printInProgress = false;
                 printButton.disabled = false;
                 printButton.textContent = '🖨️ طباعة مباشرة';
-                printInProgress = false;
             }
         }
 
-        // معالج تحميل PDF
-        document.getElementById('pdf-button').addEventListener('click', async function() {
+        // دالة تحميل PDF
+        async function generatePDF() {
             if (printInProgress) {
-                console.log('⏸️ تحميل PDF محجوب');
+                console.log('⏸️ عملية تحميل PDF محجوبة');
                 return;
             }
 
-            const pdfButton = this;
-            pdfButton.disabled = true;
-            pdfButton.textContent = '🔄 جاري التحميل...';
-            showLoading('جاري إنشاء ملف PDF...');
-            updateStatus('🔍 بدء إنشاء ملف PDF...');
             printInProgress = true;
+            const pdfButton = document.getElementById('pdf-button');
+            pdfButton.disabled = true;
+            pdfButton.textContent = '🔄 جاري إنشاء PDF...';
+            updateStatus('📄 بدء إنشاء ملف PDF...');
 
             try {
+                console.log('📄 بدء إنشاء PDF');
+                
                 // تحديث جميع المعاينات
                 updateAllPreviews();
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                // تجهيز المنطقة المخفية
+                // الحصول على المنطقة المخفية للتصوير
                 const hiddenArea = document.getElementById('hidden-print-area');
+                
+                // جعل المنطقة المخفية مرئية مؤقتاً للتصوير
                 hiddenArea.style.position = 'fixed';
                 hiddenArea.style.left = '0';
                 hiddenArea.style.top = '0';
@@ -1175,8 +1062,7 @@
                 hiddenArea.style.opacity = '1';
                 hiddenArea.style.visibility = 'visible';
 
-                showLoading('جاري تصوير المحتوى للـ PDF...');
-                updateStatus('📷 تصوير المحتوى للـ PDF...');
+                updateStatus('📷 تصوير المحتوى للPDF...');
                 await new Promise(resolve => setTimeout(resolve, 300));
 
                 // تصوير المحتوى
@@ -1190,7 +1076,16 @@
                     height: currentOrientation === 'landscape' ? 794 : 1123,
                     scrollX: 0,
                     scrollY: 0,
-                    foreignObjectRendering: true
+                    foreignObjectRendering: true,
+                    onclone: function(clonedDoc) {
+                        // التأكد من ظهور النصوص في النسخة المستنسخة
+                        const clonedTexts = clonedDoc.querySelectorAll('.hidden-print-text');
+                        clonedTexts.forEach(text => {
+                            text.style.opacity = '1';
+                            text.style.visibility = 'visible';
+                            text.style.display = 'block';
+                        });
+                    }
                 });
 
                 // إخفاء المنطقة مرة أخرى
@@ -1199,10 +1094,10 @@
                 hiddenArea.style.top = '-99999px';
                 hiddenArea.style.zIndex = '1';
 
-                showLoading('جاري إنشاء ملف PDF...');
-                updateStatus('📑 إنشاء ملف PDF...');
-                
-                // إنشاء PDF
+                console.log(`✅ تم تصوير PDF - الأبعاد: ${canvas.width}x${canvas.height}`);
+                updateStatus('🎯 تم التصوير، جاري إنشاء PDF...');
+
+                // إنشاء PDF باستخدام jsPDF
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF({
                     orientation: currentOrientation,
@@ -1210,74 +1105,54 @@
                     format: 'a4'
                 });
 
-                // إضافة الصورة إلى PDF
-                const imgData = canvas.toDataURL('image/png', 1.0);
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
                 const imgProps = pdf.getImageProperties(imgData);
+                
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
-                // تحميل PDF
-                pdf.save(`الفجر_عروض_خاصة_${systemInfo.date}.pdf`);
                 
-                hideLoading();
-                updateStatus('✅ تم تحميل ملف PDF بنجاح!');
+                // إضافة الصورة إلى PDF بحجم كامل الصفحة
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                
+                // تحميل PDF
+                const fileName = `فجر_عرض_خاص_${new Date().toISOString().split('T')[0]}.pdf`;
+                pdf.save(fileName);
+
+                updateStatus(`📄 تم تحميل ملف PDF: ${fileName}`);
+                console.log(`✅ تم إنشاء وتحميل PDF: ${fileName}`);
             } catch (error) {
-                console.error('❌ خطأ في إنشاء PDF:', error);
+                console.error('❌ خطأ أثناء إنشاء PDF:', error);
                 updateStatus('❌ حدث خطأ أثناء إنشاء PDF');
-                hideLoading();
-                alert('حدث خطأ أثناء إنشاء PDF. يرجى المحاولة مرة أخرى.');
+                alert('حدث خطأ أثناء إنشاء PDF: ' + error.message);
             } finally {
+                printInProgress = false;
                 pdfButton.disabled = false;
                 pdfButton.textContent = '📄 تحميل PDF';
-                printInProgress = false;
-            }
-        });
-
-        // إعداد معالجات الأحداث لأزرار الطباعة
-        document.getElementById('print-button').addEventListener('click', enhancedPrint);
-
-        // تحديث المعاينة عند تغيير أي إعداد
-        document.querySelectorAll('.form-control, .checkbox-item input').forEach(element => {
-            element.addEventListener('input', updateAllPreviews);
-            element.addEventListener('change', updateAllPreviews);
-        });
-
-        // تحميل الصورة الافتراضية عند بدء التشغيل
-        window.addEventListener('DOMContentLoaded', function() {
-            // تحديث المعاينة لعرض الخلفية الافتراضية
-            updateAllPreviews();
-            updateStatus('🖼️ تم تحميل الخلفية الافتراضية');
-            
-            // تحسين تجربة المستخدم للهواتف
-            optimizeMobileExperience();
-        });
-
-        // تحسين تجربة المستخدم للهواتف عند تحميل الصفحة
-        function optimizeMobileExperience() {
-            const isMobile = window.innerWidth <= 768;
-            if (isMobile) {
-                // تعديلات إضافية للهواتف
-                document.querySelectorAll('.form-control').forEach(el => {
-                    el.style.fontSize = '16px'; // تجنب التكبير التلقائي على iOS
-                });
-                
-                // تعديل حجم المعاينة للهواتف
-                const previewContainer = document.getElementById('preview-container');
-                if (previewContainer) {
-                    previewContainer.style.minHeight = '280px';
-                }
-                
-                // تحسين أداء الهاتف
-                document.body.style.overflowX = 'hidden';
             }
         }
 
-        // تشغيل تحسينات الهاتف عند تغيير حجم النافذة
-        window.addEventListener('resize', optimizeMobileExperience);
+        // إضافة المستمعين للأزرار
+        document.getElementById('print-button').addEventListener('click', enhancedPrint);
+        document.getElementById('pdf-button').addEventListener('click', generatePDF);
 
-        // إظهار رسالة ترحيبية
-        console.log('✨ تم تحميل نظام طباعة "الفجر" بنجاح مع خلفية افتراضية وشفافية 15%');
+        // تهيئة عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAllPreviews();
+            updateStatus('🖨️ نظام طباعة محسن مع عرض المحتوى');
+            
+            // تحديث المعاينة عند تغيير أي خاصية
+            ['display', 'product', 'price'].forEach(section => {
+                document.getElementById(section + '-text').addEventListener('input', updateAllPreviews);
+                document.getElementById(section + '-font').addEventListener('change', updateAllPreviews);
+                document.getElementById(section + '-size').addEventListener('input', updateAllPreviews);
+                document.getElementById(section + '-color').addEventListener('change', updateAllPreviews);
+                document.getElementById(section + '-bold').addEventListener('change', updateAllPreviews);
+                document.getElementById(section + '-italic').addEventListener('change', updateAllPreviews);
+                document.getElementById(section + '-underline').addEventListener('change', updateAllPreviews);
+            });
+            
+            console.log('🚀 تم تهيئة نظام الطباعة بنجاح');
+        });
     </script>
 </body>
 </html>
