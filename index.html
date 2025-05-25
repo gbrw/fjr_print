@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>محرر النصوص التفاعلي</title>
-    <!-- مكتبة jsPDF لإنشاء PDF -->
+    
+    <!-- مكتبات الطباعة والتصدير -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/print-js/1.6.0/print.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/print-js/1.6.0/print.min.css">
+    
     <style>
         * {
             margin: 0;
@@ -220,28 +224,49 @@
             box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
         }
 
-        .pdf-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
             border: none;
-            padding: 18px 30px;
-            font-size: 1.3em;
+            padding: 15px 20px;
+            font-size: 1.1em;
             font-weight: bold;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 20px;
             -webkit-tap-highlight-color: transparent;
         }
 
-        .pdf-btn:hover,
-        .pdf-btn:active {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
+        .btn-secondary {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .pdf-btn:disabled {
+        .btn-primary:hover,
+        .btn-primary:active,
+        .btn-secondary:hover,
+        .btn-secondary:active {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
@@ -294,13 +319,13 @@
             text-align: center;
         }
 
-        /* عنصر PDF مخفي */
-        .pdf-content {
+        /* عنصر الطباعة */
+        .print-area {
             position: absolute;
             left: -9999px;
             top: -9999px;
-            width: 794px; /* A4 width in pixels at 96 DPI */
-            height: 1123px; /* A4 height in pixels at 96 DPI */
+            width: 794px;
+            height: 1123px;
             background: white;
             padding: 40px;
             display: flex;
@@ -309,13 +334,50 @@
             align-items: center;
             text-align: center;
             direction: rtl;
+            font-family: Arial, sans-serif;
         }
 
-        .pdf-text {
+        .print-text {
             margin-bottom: 25px;
             line-height: 1.2;
             word-break: break-word;
             text-align: center;
+        }
+
+        /* CSS للطباعة التقليدية */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            
+            body * {
+                visibility: hidden !important;
+            }
+            
+            .print-area,
+            .print-area * {
+                visibility: visible !important;
+            }
+            
+            .print-area {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                z-index: 99999 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        /* للطباعة الأفقية */
+        @media print and (orientation: landscape) {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
         }
 
         /* تحسينات للشاشات الكبيرة */
@@ -339,18 +401,7 @@
             }
         }
 
-        /* تحسينات للتابلت */
-        @media (max-width: 1200px) and (min-width: 769px) {
-            .header {
-                font-size: 2.2em;
-            }
-            
-            .preview-container {
-                min-height: 350px;
-            }
-        }
-
-        /* تحسينات للهواتف الكبيرة */
+        /* تحسينات للهواتف */
         @media (max-width: 768px) {
             body {
                 padding: 5px;
@@ -403,100 +454,15 @@
                 padding: 15px;
             }
             
-            .pdf-btn {
-                padding: 20px;
-                font-size: 1.4em;
-            }
-        }
-
-        /* تحسينات للهواتف الصغيرة */
-        @media (max-width: 480px) {
-            .header {
-                font-size: 1.5em;
-                padding: 12px;
-            }
-            
-            .main-content {
-                padding: 10px;
+            .action-buttons {
+                grid-template-columns: 1fr;
                 gap: 10px;
             }
             
-            .group-box {
-                padding: 12px;
-                border-radius: 12px;
-            }
-            
-            .group-title {
-                font-size: 1.1em;
-            }
-            
-            .form-control {
-                padding: 10px 12px;
-            }
-            
-            .checkbox-item {
-                padding: 12px;
-                font-size: 15px;
-            }
-            
-            .preview-container {
-                min-height: 200px;
-                padding: 12px;
-            }
-            
-            .range-value {
-                min-width: 50px;
-                padding: 6px 10px;
-                font-size: 13px;
-            }
-        }
-
-        /* تحسينات للهواتف في الوضع الأفقي */
-        @media (max-width: 768px) and (orientation: landscape) {
-            .main-content {
-                grid-template-columns: 1fr 1fr;
-                gap: 15px;
-            }
-            
-            .preview-container {
-                min-height: 200px;
-            }
-            
-            .header {
-                padding: 10px;
-                font-size: 1.6em;
-            }
-        }
-
-        /* تحسين التمرير على الهواتف */
-        @media (max-width: 768px) {
-            body {
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .controls-section {
-                max-height: none;
-                overflow: visible;
-            }
-        }
-
-        /* تحسين اللمس */
-        @media (hover: none) and (pointer: coarse) {
-            .group-box:hover {
-                transform: none;
-            }
-            
-            .checkbox-item:hover {
-                background: #f8f9fa;
-                border-color: transparent;
-            }
-            
-            .file-input-label:hover {
-                transform: none;
-            }
-            
-            .pdf-btn:hover {
-                transform: none;
+            .btn-primary,
+            .btn-secondary {
+                padding: 18px;
+                font-size: 1.2em;
             }
         }
     </style>
@@ -504,7 +470,7 @@
 <body>
     <div class="container">
         <div class="header">
-            محرر النصوص التفاعلي
+            محرر النصوص التفاعلي - الإصدار المحسن
         </div>
         
         <div class="main-content">
@@ -702,7 +668,12 @@
                             </div>
                         </div>
                     </div>
-                    <button class="pdf-btn" id="pdf-button">📄 تحميل PDF</button>
+                    
+                    <!-- أزرار الطباعة والتصدير -->
+                    <div class="action-buttons">
+                        <button class="btn-primary" id="print-button">🖨️ طباعة</button>
+                        <button class="btn-secondary" id="pdf-button">📄 تحميل PDF</button>
+                    </div>
                 </div>
             </div>
 
@@ -720,17 +691,17 @@
         </div>
     </div>
 
-    <!-- عنصر PDF مخفي -->
-    <div class="pdf-content" id="pdf-content">
-        <div class="pdf-text" id="display-pdf"></div>
-        <div class="pdf-text" id="product-pdf"></div>
-        <div class="pdf-text" id="price-pdf"></div>
+    <!-- منطقة الطباعة المخفية -->
+    <div class="print-area" id="print-area">
+        <div class="print-text" id="display-print"></div>
+        <div class="print-text" id="product-print"></div>
+        <div class="print-text" id="price-print"></div>
     </div>
 
     <script>
         // متغيرات عامة
         let backgroundImageUrl = '';
-        let pdfInProgress = false;
+        let operationInProgress = false;
 
         // تحديث قيمة الشفافية
         document.getElementById('background-opacity').addEventListener('input', function() {
@@ -777,28 +748,27 @@
             }
         }
 
-        // تحديث المعاينة
+        // تحديث المعاينة ومنطقة الطباعة
         function updatePreview() {
             const previewPage = document.getElementById('preview-page');
-            const pdfContent = document.getElementById('pdf-content');
+            const printArea = document.getElementById('print-area');
             const opacity = document.getElementById('background-opacity').value / 100;
             
+            // تطبيق الخلفية
             if (backgroundImageUrl) {
                 const bgStyle = `url(${backgroundImageUrl})`;
                 const bgColor = `rgba(255, 255, 255, ${1 - opacity})`;
                 
-                previewPage.style.backgroundImage = bgStyle;
-                previewPage.style.backgroundColor = bgColor;
-                previewPage.style.backgroundBlendMode = 'overlay';
-                
-                pdfContent.style.backgroundImage = bgStyle;
-                pdfContent.style.backgroundColor = bgColor;
-                pdfContent.style.backgroundBlendMode = 'overlay';
+                [previewPage, printArea].forEach(element => {
+                    element.style.backgroundImage = bgStyle;
+                    element.style.backgroundColor = bgColor;
+                    element.style.backgroundBlendMode = 'overlay';
+                });
             } else {
-                previewPage.style.backgroundImage = 'none';
-                previewPage.style.backgroundColor = 'white';
-                pdfContent.style.backgroundImage = 'none';
-                pdfContent.style.backgroundColor = 'white';
+                [previewPage, printArea].forEach(element => {
+                    element.style.backgroundImage = 'none';
+                    element.style.backgroundColor = 'white';
+                });
             }
 
             // تطبيق التنسيق على المعاينة
@@ -806,63 +776,160 @@
             applyTextStyle('product', document.getElementById('product-preview'));
             applyTextStyle('price', document.getElementById('price-preview'));
 
-            // تطبيق التنسيق على PDF
-            applyTextStyle('display', document.getElementById('display-pdf'));
-            applyTextStyle('product', document.getElementById('product-pdf'));
-            applyTextStyle('price', document.getElementById('price-pdf'));
+            // تطبيق التنسيق على منطقة الطباعة
+            applyTextStyle('display', document.getElementById('display-print'));
+            applyTextStyle('product', document.getElementById('product-print'));
+            applyTextStyle('price', document.getElementById('price-print'));
 
             // تحديث اتجاه الصفحة
             const isLandscape = document.getElementById('orientation-landscape').checked;
             const container = document.getElementById('preview-container');
             if (isLandscape) {
                 container.style.aspectRatio = '4/3';
+                printArea.style.width = '1123px';
+                printArea.style.height = '794px';
             } else {
                 container.style.aspectRatio = '3/4';
+                printArea.style.width = '794px';
+                printArea.style.height = '1123px';
+            }
+
+            updatePrintCSS();
+        }
+
+        // تحديث CSS الطباعة
+        function updatePrintCSS() {
+            const isLandscape = document.getElementById('orientation-landscape').checked;
+            
+            // إزالة style سابق
+            const existingStyle = document.getElementById('dynamic-print-style');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+
+            // إضافة style جديد
+            const style = document.createElement('style');
+            style.id = 'dynamic-print-style';
+            style.textContent = `
+                @media print {
+                    @page {
+                        size: A4 ${isLandscape ? 'landscape' : 'portrait'};
+                        margin: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // دالة الطباعة المحسنة (حل متعدد الطرق)
+        async function smartPrint() {
+            if (operationInProgress) return;
+            
+            operationInProgress = true;
+            const printButton = document.getElementById('print-button');
+            printButton.disabled = true;
+            printButton.textContent = '🔄 جاري الطباعة...';
+
+            try {
+                updatePreview();
+                await new Promise(resolve => setTimeout(resolve, 200));
+
+                // الطريقة الأولى: PrintJS
+                if (typeof printJS !== 'undefined') {
+                    try {
+                        printJS({
+                            printable: 'print-area',
+                            type: 'html',
+                            css: [`
+                                .print-area {
+                                    width: 100%;
+                                    height: 100%;
+                                    padding: 20mm;
+                                    background-size: cover;
+                                    background-position: center;
+                                    background-repeat: no-repeat;
+                                    text-align: center;
+                                    direction: rtl;
+                                }
+                                .print-text {
+                                    margin-bottom: 25px;
+                                    line-height: 1.2;
+                                    word-break: break-word;
+                                    text-align: center;
+                                }
+                            `],
+                            style: '@page { size: A4; margin: 0; }',
+                            onPrintDialogClose: () => {
+                                console.log('طباعة PrintJS مكتملة');
+                            }
+                        });
+                        console.log('تم استخدام PrintJS للطباعة');
+                    } catch (printJSError) {
+                        console.warn('فشل PrintJS، التجربة التالية...', printJSError);
+                        throw printJSError;
+                    }
+                } else {
+                    throw new Error('PrintJS غير متوفر');
+                }
+
+            } catch (error) {
+                console.log('تجربة الطباعة التقليدية...');
+                
+                // الطريقة الثانية: الطباعة التقليدية
+                try {
+                    window.print();
+                    console.log('تم استخدام الطباعة التقليدية');
+                } catch (traditionalError) {
+                    console.error('فشلت جميع طرق الطباعة:', traditionalError);
+                    alert('عذراً، حدث خطأ في الطباعة. يرجى المحاولة مرة أخرى أو استخدام تحميل PDF.');
+                }
+            } finally {
+                setTimeout(() => {
+                    operationInProgress = false;
+                    printButton.disabled = false;
+                    printButton.textContent = '🖨️ طباعة';
+                }, 1500);
             }
         }
 
-        // دالة إنشاء وتحميل PDF
+        // دالة إنشاء PDF
         async function generatePDF() {
-            // منع التكرار
-            if (pdfInProgress) {
-                return;
-            }
-
-            pdfInProgress = true;
+            if (operationInProgress) return;
+            
+            operationInProgress = true;
             const pdfButton = document.getElementById('pdf-button');
             pdfButton.disabled = true;
             pdfButton.textContent = '🔄 جاري إنشاء PDF...';
 
             try {
-                // تحديث المحتوى
                 updatePreview();
+                await new Promise(resolve => setTimeout(resolve, 300));
 
-                // الحصول على العنصر المخفي
-                const pdfElement = document.getElementById('pdf-content');
+                const printElement = document.getElementById('print-area');
                 
-                // جعل العنصر مرئي مؤقتاً للتصوير
-                pdfElement.style.position = 'fixed';
-                pdfElement.style.left = '0';
-                pdfElement.style.top = '0';
-                pdfElement.style.zIndex = '-1';
+                // جعل العنصر مرئي مؤقتاً
+                printElement.style.position = 'fixed';
+                printElement.style.left = '0';
+                printElement.style.top = '0';
+                printElement.style.zIndex = '-1';
 
-                // انتظار قصير للتأكد من التحديث
                 await new Promise(resolve => setTimeout(resolve, 100));
 
                 // تصوير العنصر
-                const canvas = await html2canvas(pdfElement, {
+                const canvas = await html2canvas(printElement, {
                     backgroundColor: '#ffffff',
                     scale: 2,
                     useCORS: true,
                     allowTaint: true,
-                    width: 794,
-                    height: 1123
+                    width: parseInt(printElement.style.width) || 794,
+                    height: parseInt(printElement.style.height) || 1123,
+                    logging: false
                 });
 
-                // إخفاء العنصر مرة أخرى
-                pdfElement.style.position = 'absolute';
-                pdfElement.style.left = '-9999px';
-                pdfElement.style.top = '-9999px';
+                // إخفاء العنصر
+                printElement.style.position = 'absolute';
+                printElement.style.left = '-9999px';
+                printElement.style.top = '-9999px';
 
                 // إنشاء PDF
                 const { jsPDF } = window.jspdf;
@@ -873,7 +940,6 @@
                     format: 'a4'
                 });
 
-                // إضافة الصورة إلى PDF
                 const imgData = canvas.toDataURL('image/png');
                 const imgWidth = isLandscape ? 297 : 210;
                 const imgHeight = isLandscape ? 210 : 297;
@@ -881,8 +947,9 @@
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
 
                 // تحميل PDF
-                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-                const filename = `طباعة_${timestamp}.pdf`;
+                const now = new Date();
+                const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, '');
+                const filename = `طباعة_gbrw_${timestamp}.pdf`;
                 pdf.save(filename);
 
                 console.log('تم إنشاء PDF بنجاح');
@@ -891,15 +958,23 @@
                 console.error('خطأ في إنشاء PDF:', error);
                 alert('حدث خطأ في إنشاء PDF. يرجى المحاولة مرة أخرى.');
             } finally {
-                // إعادة تفعيل الزر
-                pdfInProgress = false;
+                operationInProgress = false;
                 pdfButton.disabled = false;
                 pdfButton.textContent = '📄 تحميل PDF';
             }
         }
 
-        // ربط زر PDF
+        // ربط الأزرار
+        document.getElementById('print-button').addEventListener('click', smartPrint);
         document.getElementById('pdf-button').addEventListener('click', generatePDF);
+
+        // منع اختصارات لوحة المفاتيح من التداخل
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                smartPrint();
+            }
+        });
 
         // إضافة مستمعي الأحداث
         function addEventListeners() {
@@ -922,7 +997,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             addEventListeners();
             updatePreview();
-            console.log('نظام PDF جاهز للاستخدام');
+            console.log('🚀 النظام المحسن جاهز - المستخدم: gbrw - التاريخ: 2025-05-25 20:28:45');
+            console.log('📚 المكتبات المحملة:', {
+                'jsPDF': typeof window.jspdf !== 'undefined',
+                'html2canvas': typeof html2canvas !== 'undefined',
+                'PrintJS': typeof printJS !== 'undefined'
+            });
         });
     </script>
 </body>
