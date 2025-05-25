@@ -291,15 +291,13 @@
             text-align: center;
         }
 
-        /* عنصر الطباعة المخفي تماماً */
-        .print-only-content {
+        /* iframe مخفي للطباعة */
+        #print-frame {
             position: absolute;
-            left: -999999px;
-            top: -999999px;
+            left: -9999px;
+            top: -9999px;
             width: 1px;
             height: 1px;
-            overflow: hidden;
-            opacity: 0;
             visibility: hidden;
         }
 
@@ -705,13 +703,14 @@
         </div>
     </div>
 
-    <!-- عنصر الطباعة المخفي -->
-    <div class="print-only-content" id="print-only-content"></div>
+    <!-- iframe مخفي للطباعة -->
+    <iframe id="print-frame" name="print-frame"></iframe>
 
     <script>
         // متغيرات عامة
         let backgroundImageUrl = '';
-        let isCurrentlyPrinting = false;
+        let printInProgress = false;
+        let printTimeoutId = null;
 
         // تحديث قيمة الشفافية
         document.getElementById('background-opacity').addEventListener('input', function() {
@@ -787,17 +786,20 @@
             }
         }
 
-        // دالة الطباعة بنافذة جديدة (الحل النهائي)
-        function printContent() {
-            // منع التكرار
-            if (isCurrentlyPrinting) {
+        // دالة الطباعة باستخدام iframe (الحل النهائي)
+        function printViaIframe() {
+            // منع الطباعة المتعددة
+            if (printInProgress) {
+                console.log('طباعة محجوبة - عملية سابقة جارية');
                 return;
             }
-            
-            isCurrentlyPrinting = true;
+
+            printInProgress = true;
             const printButton = document.getElementById('print-button');
             printButton.disabled = true;
             printButton.textContent = 'جاري الطباعة...';
+
+            console.log('بدء الطباعة...');
 
             // الحصول على البيانات
             const displayText = document.getElementById('display-text').value;
@@ -826,6 +828,9 @@
 
             const opacity = document.getElementById('background-opacity').value / 100;
             const isLandscape = document.getElementById('orientation-landscape').checked;
+
+            // الحصول على iframe
+            const iframe = document.getElementById('print-frame');
 
             // إنشاء محتوى HTML للطباعة
             const printHTML = `
@@ -861,6 +866,12 @@
             word-break: break-word;
             text-align: center;
         }
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -870,33 +881,53 @@
 </body>
 </html>`;
 
-            // فتح نافذة جديدة للطباعة
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(printHTML);
-            printWindow.document.close();
+            // تحميل المحتوى في iframe
+            iframe.onload = function() {
+                try {
+                    console.log('iframe محمل، بدء الطباعة');
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                    console.log('تم تنفيذ أمر الطباعة');
+                } catch (error) {
+                    console.error('خطأ في الطباعة:', error);
+                }
 
-            // انتظار تحميل المحتوى ثم الطباعة
-            printWindow.onload = function() {
-                setTimeout(() => {
-                    printWindow.print();
-                    printWindow.close();
-                    
-                    // إعادة تفعيل الزر
-                    isCurrentlyPrinting = false;
+                // إعادة تفعيل الزر بعد 2 ثانية
+                printTimeoutId = setTimeout(() => {
+                    printInProgress = false;
                     printButton.disabled = false;
                     printButton.textContent = 'طباعة الصفحة';
-                }, 500);
+                    console.log('تم رفع القفل');
+                }, 2000);
             };
+
+            // كتابة HTML في iframe
+            iframe.contentDocument.open();
+            iframe.contentDocument.write(printHTML);
+            iframe.contentDocument.close();
         }
 
         // ربط زر الطباعة
-        document.getElementById('print-button').addEventListener('click', printContent);
+        document.getElementById('print-button').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            printViaIframe();
+        });
 
         // منع Ctrl+P
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 'p') {
                 e.preventDefault();
-                printContent();
+                e.stopImmediatePropagation();
+                printViaIframe();
+            }
+        });
+
+        // منع أي أحداث طباعة إضافية
+        window.addEventListener('beforeprint', function(e) {
+            if (printInProgress) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
             }
         });
 
@@ -917,10 +948,19 @@
             document.getElementById('orientation-landscape').addEventListener('change', updatePreview);
         }
 
+        // تنظيف عند إغلاق الصفحة
+        window.addEventListener('beforeunload', function() {
+            if (printTimeoutId) {
+                clearTimeout(printTimeoutId);
+            }
+            printInProgress = false;
+        });
+
         // تهيئة الصفحة
         document.addEventListener('DOMContentLoaded', function() {
             addEventListeners();
             updatePreview();
+            console.log('الصفحة جاهزة - نظام iframe للطباعة مفعل');
         });
     </script>
 </body>
