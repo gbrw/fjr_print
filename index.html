@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحة تفاعلية</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .controls {
+            flex: 1;
+            min-width: 500px;
+        }
+        
+        .preview-container {
+            flex: 1;
+            min-width: 400px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+        
+        .group-box {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .group-box h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            color: #444;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .form-row label {
+            width: 100px;
+            margin-left: 10px;
+        }
+        
+        .form-row input,
+        .form-row select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .preview {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            min-height: 400px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+        
+        .preview-content {
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        @media print {
+            .controls {
+                display: none;
+            }
+            
+            .container {
+                display: block;
+            }
+            
+            .preview-container {
+                width: 100%;
+            }
+            
+            .preview {
+                border: none;
+                box-shadow: none;
+            }
+        }
+
+        /* التوجيه الأفقي والعمودي */
+        .horizontal-layout {
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+        }
+
+        .vertical-layout {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* تخصيص شريط التمرير للشفافية */
+        input[type="range"] {
+            width: 100%;
+        }
+
+        /* خصائص إضافية للمعاينة */
+        .preview-wrapper {
+            position: relative;
+            height: 100%;
+        }
+
+        .preview-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+            opacity: 1;
+        }
+
+        .preview-content {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <!-- قسم العرض -->
+            <div class="group-box">
+                <h2>العرض</h2>
+                <div class="form-row">
+                    <label for="title-text">النص:</label>
+                    <input type="text" id="title-text" value="عنوان العرض">
+                </div>
+                <div class="form-row">
+                    <label for="title-font">نوع الخط:</label>
+                    <select id="title-font">
+                        <option value="Arial">Arial</option>
+                        <option value="'Segoe UI'">Segoe UI</option>
+                        <option value="'Times New Roman'">Times New Roman</option>
+                        <option value="'Courier New'">Courier New</option>
+                        <option value="Tahoma">Tahoma</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="title-size">حجم الخط:</label>
+                    <input type="number" id="title-size" min="10" max="72" value="24">
+                </div>
+                <div class="form-row">
+                    <label for="title-color">اللون:</label>
+                    <select id="title-color">
+                        <option value="black">أسود</option>
+                        <option value="red">أحمر</option>
+                        <option value="blue">أزرق</option>
+                        <option value="green">أخضر</option>
+                        <option value="#800080">بنفسجي</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>خصائص النص:</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="title-bold">
+                            <label for="title-bold">غامق</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="title-italic">
+                            <label for="title-italic">مائل</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="title-underline">
+                            <label for="title-underline">تحته خط</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>المحاذاة:</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" name="title-align" id="title-align-right" value="right" checked>
+                            <label for="title-align-right">يمين</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="title-align" id="title-align-center" value="center">
+                            <label for="title-align-center">وسط</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="title-align" id="title-align-left" value="left">
+                            <label for="title-align-left">يسار</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم المنتج -->
+            <div class="group-box">
+                <h2>المنتج</h2>
+                <div class="form-row">
+                    <label for="product-text">النص:</label>
+                    <input type="text" id="product-text" value="اسم المنتج">
+                </div>
+                <div class="form-row">
+                    <label for="product-font">نوع الخط:</label>
+                    <select id="product-font">
+                        <option value="Arial">Arial</option>
+                        <option value="'Segoe UI'" selected>Segoe UI</option>
+                        <option value="'Times New Roman'">Times New Roman</option>
+                        <option value="'Courier New'">Courier New</option>
+                        <option value="Tahoma">Tahoma</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="product-size">حجم الخط:</label>
+                    <input type="number" id="product-size" min="10" max="72" value="18">
+                </div>
+                <div class="form-row">
+                    <label for="product-color">اللون:</label>
+                    <select id="product-color">
+                        <option value="black">أسود</option>
+                        <option value="red">أحمر</option>
+                        <option value="blue" selected>أزرق</option>
+                        <option value="green">أخضر</option>
+                        <option value="#800080">بنفسجي</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>خصائص النص:</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="product-bold" checked>
+                            <label for="product-bold">غامق</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="product-italic">
+                            <label for="product-italic">مائل</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="product-underline">
+                            <label for="product-underline">تحته خط</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>المحاذاة:</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" name="product-align" id="product-align-right" value="right" checked>
+                            <label for="product-align-right">يمين</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="product-align" id="product-align-center" value="center">
+                            <label for="product-align-center">وسط</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="product-align" id="product-align-left" value="left">
+                            <label for="product-align-left">يسار</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم السعر -->
+            <div class="group-box">
+                <h2>السعر</h2>
+                <div class="form-row">
+                    <label for="price-text">النص:</label>
+                    <input type="text" id="price-text" value="99.99 ريال">
+                </div>
+                <div class="form-row">
+                    <label for="price-font">نوع الخط:</label>
+                    <select id="price-font">
+                        <option value="Arial">Arial</option>
+                        <option value="'Segoe UI'">Segoe UI</option>
+                        <option value="'Times New Roman'">Times New Roman</option>
+                        <option value="'Courier New'" selected>Courier New</option>
+                        <option value="Tahoma">Tahoma</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="price-size">حجم الخط:</label>
+                    <input type="number" id="price-size" min="10" max="72" value="20">
+                </div>
+                <div class="form-row">
+                    <label for="price-color">اللون:</label>
+                    <select id="price-color">
+                        <option value="black">أسود</option>
+                        <option value="red" selected>أحمر</option>
+                        <option value="blue">أزرق</option>
+                        <option value="green">أخضر</option>
+                        <option value="#800080">بنفسجي</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>خصائص النص:</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="price-bold" checked>
+                            <label for="price-bold">غامق</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="price-italic">
+                            <label for="price-italic">مائل</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="price-underline">
+                            <label for="price-underline">تحته خط</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>المحاذاة:</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" name="price-align" id="price-align-right" value="right">
+                            <label for="price-align-right">يمين</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="price-align" id="price-align-center" value="center" checked>
+                            <label for="price-align-center">وسط</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="price-align" id="price-align-left" value="left">
+                            <label for="price-align-left">يسار</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الخلفية -->
+            <div class="group-box">
+                <h2>الخلفية</h2>
+                <div class="form-row">
+                    <label for="background-image">صورة الخلفية:</label>
+                    <input type="file" id="background-image" accept="image/*">
+                </div>
+                <div class="form-row">
+                    <label for="background-opacity">الشفافية:</label>
+                    <input type="range" id="background-opacity" min="0" max="1" step="0.1" value="1">
+                </div>
+            </div>
+
+            <!-- قسم إعدادات الصفحة -->
+            <div class="group-box">
+                <h2>إعدادات الصفحة</h2>
+                <div class="form-row">
+                    <label>اتجاه الصفحة:</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" name="page-orientation" id="orientation-vertical" value="vertical" checked>
+                            <label for="orientation-vertical">عمودي</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="page-orientation" id="orientation-horizontal" value="horizontal">
+                            <label for="orientation-horizontal">أفقي</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- زر الطباعة -->
+            <button id="print-btn">طباعة المعاينة</button>
+        </div>
+
+        <!-- قسم المعاينة -->
+        <div class="preview-container">
+            <div class="group-box">
+                <h2>المعاينة</h2>
+                <div class="preview">
+                    <div class="preview-wrapper">
+                        <div class="preview-background"></div>
+                        <div class="preview-content">
+                            <div id="preview-title"></div>
+                            <div id="preview-product"></div>
+                            <div id="preview-price"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // الحصول على جميع عناصر التحكم
+        const titleText = document.getElementById('title-text');
+        const titleFont = document.getElementById('title-font');
+        const titleSize = document.getElementById('title-size');
+        const titleColor = document.getElementById('title-color');
+        const titleBold = document.getElementById('title-bold');
+        const titleItalic = document.getElementById('title-italic');
+        const titleUnderline = document.getElementById('title-underline');
+        const titleAlignRadios = document.querySelectorAll('input[name="title-align"]');
+
+        const productText = document.getElementById('product-text');
+        const productFont = document.getElementById('product-font');
+        const productSize = document.getElementById('product-size');
+        const productColor = document.getElementById('product-color');
+        const productBold = document.getElementById('product-bold');
+        const productItalic = document.getElementById('product-italic');
+        const productUnderline = document.getElementById('product-underline');
+        const productAlignRadios = document.querySelectorAll('input[name="product-align"]');
+
+        const priceText = document.getElementById('price-text');
+        const priceFont = document.getElementById('price-font');
+        const priceSize = document.getElementById('price-size');
+        const priceColor = document.getElementById('price-color');
+        const priceBold = document.getElementById('price-bold');
+        const priceItalic = document.getElementById('price-italic');
+        const priceUnderline = document.getElementById('price-underline');
+        const priceAlignRadios = document.querySelectorAll('input[name="price-align"]');
+
+        const backgroundImage = document.getElementById('background-image');
+        const backgroundOpacity = document.getElementById('background-opacity');
+        const orientationRadios = document.querySelectorAll('input[name="page-orientation"]');
+        const printBtn = document.getElementById('print-btn');
+
+        // عناصر المعاينة
+        const previewTitle = document.getElementById('preview-title');
+        const previewProduct = document.getElementById('preview-product');
+        const previewPrice = document.getElementById('preview-price');
+        const previewBackground = document.querySelector('.preview-background');
+        const previewWrapper = document.querySelector('.preview-wrapper');
+        const preview = document.querySelector('.preview');
+
+        // دالة تحديث المعاينة
+        function updatePreview() {
+            // تحديث عنوان العرض
+            previewTitle.textContent = titleText.value;
+            previewTitle.style.fontFamily = titleFont.value;
+            previewTitle.style.fontSize = titleSize.value + 'px';
+            previewTitle.style.color = titleColor.value;
+            previewTitle.style.fontWeight = titleBold.checked ? 'bold' : 'normal';
+            previewTitle.style.fontStyle = titleItalic.checked ? 'italic' : 'normal';
+            previewTitle.style.textDecoration = titleUnderline.checked ? 'underline' : 'none';
+            
+            let titleAlign = 'right';
+            for (const radio of titleAlignRadios) {
+                if (radio.checked) {
+                    titleAlign = radio.value;
+                    break;
+                }
+            }
+            previewTitle.style.textAlign = titleAlign;
+
+            // تحديث المنتج
+            previewProduct.textContent = productText.value;
+            previewProduct.style.fontFamily = productFont.value;
+            previewProduct.style.fontSize = productSize.value + 'px';
+            previewProduct.style.color = productColor.value;
+            previewProduct.style.fontWeight = productBold.checked ? 'bold' : 'normal';
+            previewProduct.style.fontStyle = productItalic.checked ? 'italic' : 'normal';
+            previewProduct.style.textDecoration = productUnderline.checked ? 'underline' : 'none';
+            
+            let productAlign = 'right';
+            for (const radio of productAlignRadios) {
+                if (radio.checked) {
+                    productAlign = radio.value;
+                    break;
+                }
+            }
+            previewProduct.style.textAlign = productAlign;
+
+            // تحديث السعر
+            previewPrice.textContent = priceText.value;
+            previewPrice.style.fontFamily = priceFont.value;
+            previewPrice.style.fontSize = priceSize.value + 'px';
+            previewPrice.style.color = priceColor.value;
+            previewPrice.style.fontWeight = priceBold.checked ? 'bold' : 'normal';
+            previewPrice.style.fontStyle = priceItalic.checked ? 'italic' : 'normal';
+            previewPrice.style.textDecoration = priceUnderline.checked ? 'underline' : 'none';
+            
+            let priceAlign = 'right';
+            for (const radio of priceAlignRadios) {
+                if (radio.checked) {
+                    priceAlign = radio.value;
+                    break;
+                }
+            }
+            previewPrice.style.textAlign = priceAlign;
+
+            // تحديث الشفافية
+            previewBackground.style.opacity = backgroundOpacity.value;
+
+            // تحديث اتجاه الصفحة
+            let orientation = 'vertical';
+            for (const radio of orientationRadios) {
+                if (radio.checked) {
+                    orientation = radio.value;
+                    break;
+                }
+            }
+
+            if (orientation === 'horizontal') {
+                preview.style.display = 'flex';
+                preview.style.flexDirection = 'row';
+                preview.style.alignItems = 'center';
+                preview.style.justifyContent = 'space-around';
+                preview.style.minHeight = '200px';
+            } else {
+                preview.style.display = 'block';
+                preview.style.minHeight = '400px';
+            }
+        }
+
+        // أحداث للاستماع للتغييرات
+        titleText.addEventListener('input', updatePreview);
+        titleFont.addEventListener('change', updatePreview);
+        titleSize.addEventListener('input', updatePreview);
+        titleColor.addEventListener('change', updatePreview);
+        titleBold.addEventListener('change', updatePreview);
+        titleItalic.addEventListener('change', updatePreview);
+        titleUnderline.addEventListener('change', updatePreview);
+        titleAlignRadios.forEach(radio => radio.addEventListener('change', updatePreview));
+
+        productText.addEventListener('input', updatePreview);
+        productFont.addEventListener('change', updatePreview);
+        productSize.addEventListener('input', updatePreview);
+        productColor.addEventListener('change', updatePreview);
+        productBold.addEventListener('change', updatePreview);
+        productItalic.addEventListener('change', updatePreview);
+        productUnderline.addEventListener('change', updatePreview);
+        productAlignRadios.forEach(radio => radio.addEventListener('change', updatePreview));
+
+        priceText.addEventListener('input', updatePreview);
+        priceFont.addEventListener('change', updatePreview);
+        priceSize.addEventListener('input', updatePreview);
+        priceColor.addEventListener('change', updatePreview);
+        priceBold.addEventListener('change', updatePreview);
+        priceItalic.addEventListener('change', updatePreview);
+        priceUnderline.addEventListener('change', updatePreview);
+        priceAlignRadios.forEach(radio => radio.addEventListener('change', updatePreview));
+
+        backgroundOpacity.addEventListener('input', updatePreview);
+        orientationRadios.forEach(radio => radio.addEventListener('change', updatePreview));
+
+        // استيراد صورة الخلفية
+        backgroundImage.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewBackground.style.backgroundImage = `url(${event.target.result})`;
+                    updatePreview();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // زر الطباعة
+        printBtn.addEventListener('click', function() {
+            window.print();
+        });
+
+        // تحديث المعاينة عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', updatePreview);
+        
+        // تنفيذ التحديث الأولي
+        updatePreview();
+    </script>
+</body>
+</html>
