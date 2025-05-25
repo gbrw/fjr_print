@@ -110,6 +110,12 @@
             margin-bottom: 15px;
         }
         
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
         button {
             background-color: #4CAF50;
             color: white;
@@ -118,29 +124,71 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            margin-top: 10px;
+        }
+        
+        button.secondary {
+            background-color: #2196F3;
+        }
+        
+        button.tertiary {
+            background-color: #9E9E9E;
         }
         
         button:hover {
-            background-color: #45a049;
+            opacity: 0.9;
+        }
+        
+        /* تنسيق الطباعة لورقة A4 */
+        @page {
+            size: A4;
+            margin: 0;
         }
         
         @media print {
+            html, body {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 0;
+            }
+            
             .controls {
                 display: none;
             }
             
             .container {
                 display: block;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
             }
             
             .preview-container {
                 width: 100%;
+                height: 100%;
+                position: static;
             }
             
             .preview {
                 border: none;
                 box-shadow: none;
+                width: 100%;
+                height: 100%;
+                padding: 20mm;
+                margin: 0;
+                min-height: auto;
+            }
+            
+            .group-box {
+                border: none;
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .group-box h2 {
+                display: none;
             }
         }
 
@@ -183,9 +231,53 @@
             position: relative;
             z-index: 1;
         }
+        
+        /* نافذة الرسائل */
+        .message {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+            animation: fadeIn 0.3s, fadeOut 0.3s 2s forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* مؤشر الحفظ التلقائي */
+        .autosave-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            z-index: 1000;
+        }
+
+        .autosave-indicator.saving {
+            color: #ffeb3b;
+        }
     </style>
 </head>
 <body>
+    <div class="message" id="message">تم حفظ الإعدادات بنجاح</div>
+    <div class="autosave-indicator" id="autosave-indicator">آخر حفظ تلقائي: لم يتم الحفظ بعد</div>
     <div class="container">
         <div class="controls">
             <!-- قسم العرض -->
@@ -420,8 +512,12 @@
                 </div>
             </div>
 
-            <!-- زر الطباعة -->
-            <button id="print-btn">طباعة المعاينة</button>
+            <!-- أزرار الطباعة والحفظ -->
+            <div class="btn-group">
+                <button id="print-btn">طباعة ورقة A4</button>
+                <button id="save-btn" class="secondary">حفظ الإعدادات</button>
+                <button id="load-btn" class="tertiary">استرجاع الإعدادات</button>
+            </div>
         </div>
 
         <!-- قسم المعاينة -->
@@ -474,7 +570,12 @@
         const backgroundImage = document.getElementById('background-image');
         const backgroundOpacity = document.getElementById('background-opacity');
         const orientationRadios = document.querySelectorAll('input[name="page-orientation"]');
+        
         const printBtn = document.getElementById('print-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const loadBtn = document.getElementById('load-btn');
+        const messageEl = document.getElementById('message');
+        const autosaveIndicator = document.getElementById('autosave-indicator');
 
         // عناصر المعاينة
         const previewTitle = document.getElementById('preview-title');
@@ -483,6 +584,14 @@
         const previewBackground = document.querySelector('.preview-background');
         const previewWrapper = document.querySelector('.preview-wrapper');
         const preview = document.querySelector('.preview');
+
+        // متغيرات للحفظ التلقائي
+        let autoSaveTimer = null;
+        const AUTO_SAVE_DELAY = 2000; // تأخير الحفظ التلقائي بالمللي ثانية (2 ثوان)
+        let lastAutoSaveTime = null;
+
+        // متغير لتخزين البيانات المحملة من الصورة
+        let backgroundImageData = '';
 
         // دالة تحديث المعاينة
         function updatePreview() {
@@ -562,6 +671,40 @@
                 preview.style.display = 'block';
                 preview.style.minHeight = '400px';
             }
+
+            // جدولة الحفظ التلقائي بعد التغيير
+            scheduleAutoSave();
+        }
+
+        // دالة جدولة الحفظ التلقائي
+        function scheduleAutoSave() {
+            // إلغاء أي مؤقت سابق للحفظ التلقائي
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+            }
+            
+            // عرض مؤشر "جاري الحفظ..."
+            autosaveIndicator.textContent = "جاري الحفظ...";
+            autosaveIndicator.classList.add("saving");
+            
+            // جدولة الحفظ التلقائي بعد فترة زمنية محددة
+            autoSaveTimer = setTimeout(() => {
+                saveSettings(true);
+                autoSaveTimer = null;
+            }, AUTO_SAVE_DELAY);
+        }
+
+        // دالة لتنسيق التاريخ والوقت
+        function formatDateTime(date) {
+            const options = { 
+                year: 'numeric', 
+                month: 'numeric', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit' 
+            };
+            return date.toLocaleString('ar-SA', options);
         }
 
         // أحداث للاستماع للتغييرات
@@ -601,7 +744,8 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    previewBackground.style.backgroundImage = `url(${event.target.result})`;
+                    backgroundImageData = event.target.result;
+                    previewBackground.style.backgroundImage = `url(${backgroundImageData})`;
                     updatePreview();
                 };
                 reader.readAsDataURL(file);
@@ -613,8 +757,165 @@
             window.print();
         });
 
-        // تحديث المعاينة عند تحميل الصفحة
-        document.addEventListener('DOMContentLoaded', updatePreview);
+        // عرض رسالة 
+        function showMessage(message) {
+            messageEl.textContent = message;
+            messageEl.style.display = 'block';
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // دالة لحفظ الإعدادات
+        function saveSettings(isAutoSave = false) {
+            const settings = {
+                title: {
+                    text: titleText.value,
+                    font: titleFont.value,
+                    size: titleSize.value,
+                    color: titleColor.value,
+                    bold: titleBold.checked,
+                    italic: titleItalic.checked,
+                    underline: titleUnderline.checked,
+                    align: getSelectedRadioValue(titleAlignRadios)
+                },
+                product: {
+                    text: productText.value,
+                    font: productFont.value,
+                    size: productSize.value,
+                    color: productColor.value,
+                    bold: productBold.checked,
+                    italic: productItalic.checked,
+                    underline: productUnderline.checked,
+                    align: getSelectedRadioValue(productAlignRadios)
+                },
+                price: {
+                    text: priceText.value,
+                    font: priceFont.value,
+                    size: priceSize.value,
+                    color: priceColor.value,
+                    bold: priceBold.checked,
+                    italic: priceItalic.checked,
+                    underline: priceUnderline.checked,
+                    align: getSelectedRadioValue(priceAlignRadios)
+                },
+                background: {
+                    imageData: backgroundImageData,
+                    opacity: backgroundOpacity.value
+                },
+                orientation: getSelectedRadioValue(orientationRadios),
+                lastSaved: new Date().toISOString()
+            };
+            
+            localStorage.setItem('pageSettings', JSON.stringify(settings));
+            
+            // تحديث وقت الحفظ التلقائي وعرضه
+            lastAutoSaveTime = new Date();
+            if (isAutoSave) {
+                autosaveIndicator.textContent = `آخر حفظ تلقائي: ${formatDateTime(lastAutoSaveTime)}`;
+                autosaveIndicator.classList.remove("saving");
+            } else {
+                showMessage('تم حفظ الإعدادات بنجاح');
+                autosaveIndicator.textContent = `آخر حفظ تلقائي: ${formatDateTime(lastAutoSaveTime)}`;
+                autosaveIndicator.classList.remove("saving");
+            }
+        }
+
+        // دالة لاسترجاع الإعدادات
+        function loadSettings() {
+            const settingsJson = localStorage.getItem('pageSettings');
+            if (!settingsJson) {
+                showMessage('لا توجد إعدادات محفوظة');
+                return;
+            }
+            
+            const settings = JSON.parse(settingsJson);
+            
+            // استرجاع إعدادات العنوان
+            titleText.value = settings.title.text;
+            titleFont.value = settings.title.font;
+            titleSize.value = settings.title.size;
+            titleColor.value = settings.title.color;
+            titleBold.checked = settings.title.bold;
+            titleItalic.checked = settings.title.italic;
+            titleUnderline.checked = settings.title.underline;
+            setSelectedRadioValue(titleAlignRadios, settings.title.align);
+            
+            // استرجاع إعدادات المنتج
+            productText.value = settings.product.text;
+            productFont.value = settings.product.font;
+            productSize.value = settings.product.size;
+            productColor.value = settings.product.color;
+            productBold.checked = settings.product.bold;
+            productItalic.checked = settings.product.italic;
+            productUnderline.checked = settings.product.underline;
+            setSelectedRadioValue(productAlignRadios, settings.product.align);
+            
+            // استرجاع إعدادات السعر
+            priceText.value = settings.price.text;
+            priceFont.value = settings.price.font;
+            priceSize.value = settings.price.size;
+            priceColor.value = settings.price.color;
+            priceBold.checked = settings.price.bold;
+            priceItalic.checked = settings.price.italic;
+            priceUnderline.checked = settings.price.underline;
+            setSelectedRadioValue(priceAlignRadios, settings.price.align);
+            
+            // استرجاع إعدادات الخلفية
+            backgroundImageData = settings.background.imageData;
+            if (backgroundImageData) {
+                previewBackground.style.backgroundImage = `url(${backgroundImageData})`;
+            }
+            backgroundOpacity.value = settings.background.opacity;
+            
+            // استرجاع اتجاه الصفحة
+            setSelectedRadioValue(orientationRadios, settings.orientation);
+            
+            // تحديث المعاينة
+            updatePreview();
+            
+            // تحديث مؤشر آخر حفظ
+            if (settings.lastSaved) {
+                lastAutoSaveTime = new Date(settings.lastSaved);
+                autosaveIndicator.textContent = `آخر حفظ تلقائي: ${formatDateTime(lastAutoSaveTime)}`;
+            }
+            
+            showMessage('تم استرجاع الإعدادات بنجاح');
+        }
+        
+        // مساعد للحصول على قيمة الراديو المحدد
+        function getSelectedRadioValue(radios) {
+            for (const radio of radios) {
+                if (radio.checked) {
+                    return radio.value;
+                }
+            }
+            return null;
+        }
+        
+        // مساعد لتعيين قيمة الراديو المحدد
+        function setSelectedRadioValue(radios, value) {
+            for (const radio of radios) {
+                radio.checked = (radio.value === value);
+            }
+        }
+        
+        // إضافة أحداث للأزرار
+        saveBtn.addEventListener('click', () => saveSettings(false));
+        loadBtn.addEventListener('click', loadSettings);
+
+        // تحميل الإعدادات المحفوظة عند تحميل الصفحة
+        window.addEventListener('load', function() {
+            // محاولة تحميل الإعدادات المحفوظة
+            const settingsJson = localStorage.getItem('pageSettings');
+            if (settingsJson) {
+                loadSettings();
+            } else {
+                // إذا لم تكن هناك إعدادات محفوظة، استخدام الإعدادات الافتراضية والحفظ
+                updatePreview();
+                saveSettings(true);
+            }
+        });
         
         // تنفيذ التحديث الأولي
         updatePreview();
