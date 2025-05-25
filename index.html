@@ -238,6 +238,13 @@
             box-shadow: 0 10px 25px rgba(238, 90, 36, 0.4);
         }
 
+        .print-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .preview-section {
             background: white;
             border-radius: 15px;
@@ -281,75 +288,61 @@
             line-height: 1.4;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            text-align: center; /* جميع النصوص في الوسط */
+            text-align: center;
         }
 
-        /* محتوى الطباعة - مخفي بالكامل */
-        .print-only {
-            display: none;
+        /* محتوى الطباعة - مخفي تماماً */
+        #print-area {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            visibility: hidden;
         }
 
-        /* CSS للطباعة فقط */
+        /* CSS للطباعة */
         @media print {
-            /* إخفاء كل شيء أولاً */
-            * {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            
+            body * {
                 visibility: hidden !important;
             }
             
-            /* إعادة تعيين body */
-            body {
-                background: white !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+            #print-area,
+            #print-area * {
+                visibility: visible !important;
             }
             
-            /* إظهار محتوى الطباعة فقط */
-            .print-only {
-                display: block !important;
-                visibility: visible !important;
+            #print-area {
                 position: fixed !important;
-                top: 0 !important;
                 left: 0 !important;
-                width: 100vw !important;
-                height: 100vh !important;
-                z-index: 99999 !important;
-                background: white !important;
-                padding: 20mm !important;
-                box-sizing: border-box !important;
-            }
-            
-            .print-only * {
-                visibility: visible !important;
-            }
-            
-            .print-content {
+                top: 0 !important;
                 width: 100% !important;
                 height: 100% !important;
-                background-size: cover !important;
-                background-position: center !important;
-                background-repeat: no-repeat !important;
-                direction: rtl !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                padding: 20mm !important;
+                margin: 0 !important;
+                background: white !important;
+                z-index: 99999 !important;
                 display: flex !important;
                 flex-direction: column !important;
                 justify-content: flex-start !important;
                 align-items: center !important;
                 text-align: center !important;
+                direction: rtl !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             
             .print-text {
-                margin-bottom: 20px !important;
+                margin-bottom: 25px !important;
                 text-align: center !important;
                 line-height: 1.2 !important;
                 word-break: break-word !important;
-            }
-            
-            @page {
-                size: A4;
-                margin: 0 !important;
             }
         }
 
@@ -357,7 +350,7 @@
         @media print and (orientation: landscape) {
             @page {
                 size: A4 landscape;
-                margin: 0 !important;
+                margin: 0;
             }
         }
 
@@ -731,37 +724,6 @@
                             <span class="range-value" id="opacity-value">80%</span>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>إطار الصفحة:</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="page-border">
-                                <label for="page-border">تفعيل الإطار</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="border-color">لون الإطار:</label>
-                        <select id="border-color" class="form-control">
-                            <option value="#000000" selected>أسود</option>
-                            <option value="#ff0000">أحمر</option>
-                            <option value="#00ff00">أخضر</option>
-                            <option value="#0000ff">أزرق</option>
-                            <option value="#ffff00">أصفر</option>
-                            <option value="#ff00ff">بنفسجي</option>
-                            <option value="#00ffff">سماوي</option>
-                            <option value="#808080">رمادي</option>
-                            <option value="#8B4513">بني</option>
-                            <option value="#FFD700">ذهبي</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="border-width">سُمك الإطار:</label>
-                        <div class="range-container">
-                            <input type="range" id="border-width" class="range-slider" min="1" max="20" value="5">
-                            <span class="range-value" id="border-width-value">5px</span>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- قسم إعدادات الصفحة -->
@@ -776,7 +738,7 @@
                             </div>
                         </div>
                     </div>
-                    <button class="print-btn" onclick="printPage()">طباعة الصفحة</button>
+                    <button class="print-btn" id="print-button" onclick="printPage()">طباعة الصفحة</button>
                 </div>
             </div>
 
@@ -794,28 +756,21 @@
         </div>
     </div>
 
-    <!-- محتوى الطباعة الوحيد -->
-    <div class="print-only">
-        <div class="print-content" id="print-content">
-            <div class="print-text" id="display-print"></div>
-            <div class="print-text" id="product-print"></div>
-            <div class="print-text" id="price-print"></div>
-        </div>
+    <!-- منطقة الطباعة المخفية -->
+    <div id="print-area">
+        <div class="print-text" id="display-print"></div>
+        <div class="print-text" id="product-print"></div>
+        <div class="print-text" id="price-print"></div>
     </div>
 
     <script>
         // متغيرات عامة
         let backgroundImageUrl = '';
+        let isPrinting = false; // منع التكرار
 
         // تحديث قيمة الشفافية
         document.getElementById('background-opacity').addEventListener('input', function() {
             document.getElementById('opacity-value').textContent = this.value + '%';
-            updatePreview();
-        });
-
-        // تحديث قيمة سُمك الإطار
-        document.getElementById('border-width').addEventListener('input', function() {
-            document.getElementById('border-width-value').textContent = this.value + 'px';
             updatePreview();
         });
 
@@ -858,43 +813,40 @@
             }
         }
 
-        // تطبيق الإطار
-        function applyBorder(element) {
-            const hasBorder = document.getElementById('page-border').checked;
-            const borderColor = document.getElementById('border-color').value;
-            const borderWidth = document.getElementById('border-width').value;
-
-            if (hasBorder) {
-                element.style.border = `${borderWidth}px solid ${borderColor}`;
-                element.style.borderRadius = '10px';
-            } else {
-                element.style.border = 'none';
-                element.style.borderRadius = '0';
-            }
-        }
-
         // تحديث المعاينة
         function updatePreview() {
             // تطبيق الخلفية
             const previewPage = document.getElementById('preview-page');
+            const printArea = document.getElementById('print-area');
             const opacity = document.getElementById('background-opacity').value / 100;
             
             if (backgroundImageUrl) {
-                previewPage.style.backgroundImage = `url(${backgroundImageUrl})`;
-                previewPage.style.backgroundColor = `rgba(255, 255, 255, ${1 - opacity})`;
+                const bgStyle = `url(${backgroundImageUrl})`;
+                const bgColor = `rgba(255, 255, 255, ${1 - opacity})`;
+                
+                previewPage.style.backgroundImage = bgStyle;
+                previewPage.style.backgroundColor = bgColor;
                 previewPage.style.backgroundBlendMode = 'overlay';
+                
+                printArea.style.backgroundImage = bgStyle;
+                printArea.style.backgroundColor = bgColor;
+                printArea.style.backgroundBlendMode = 'overlay';
             } else {
                 previewPage.style.backgroundImage = 'none';
                 previewPage.style.backgroundColor = 'white';
+                printArea.style.backgroundImage = 'none';
+                printArea.style.backgroundColor = 'white';
             }
-
-            // تطبيق الإطار
-            applyBorder(previewPage);
 
             // تطبيق التنسيق على كل قسم
             applyTextStyle('display', document.getElementById('display-preview'));
             applyTextStyle('product', document.getElementById('product-preview'));
             applyTextStyle('price', document.getElementById('price-preview'));
+
+            // تحديث نسخة الطباعة
+            applyTextStyle('display', document.getElementById('display-print'));
+            applyTextStyle('product', document.getElementById('product-print'));
+            applyTextStyle('price', document.getElementById('price-print'));
 
             // تحديث اتجاه الصفحة
             const isLandscape = document.getElementById('orientation-landscape').checked;
@@ -905,32 +857,12 @@
                 container.style.aspectRatio = '3/4';
             }
 
-            // تحديث نسخة الطباعة
-            updatePrintVersion();
+            // تحديث CSS الطباعة حسب الاتجاه
+            updatePrintOrientation();
         }
 
-        // تحديث نسخة الطباعة
-        function updatePrintVersion() {
-            const printContent = document.getElementById('print-content');
-            const opacity = document.getElementById('background-opacity').value / 100;
-            
-            if (backgroundImageUrl) {
-                printContent.style.backgroundImage = `url(${backgroundImageUrl})`;
-                printContent.style.backgroundColor = `rgba(255, 255, 255, ${1 - opacity})`;
-                printContent.style.backgroundBlendMode = 'overlay';
-            } else {
-                printContent.style.backgroundImage = 'none';
-                printContent.style.backgroundColor = 'white';
-            }
-
-            // تطبيق الإطار
-            applyBorder(printContent);
-
-            applyTextStyle('display', document.getElementById('display-print'));
-            applyTextStyle('product', document.getElementById('product-print'));
-            applyTextStyle('price', document.getElementById('price-print'));
-
-            // تحديث CSS الطباعة حسب الاتجاه
+        // تحديث اتجاه الطباعة
+        function updatePrintOrientation() {
             const isLandscape = document.getElementById('orientation-landscape').checked;
             
             // إزالة أي style سابق للطباعة
@@ -946,22 +878,48 @@
                 @media print {
                     @page {
                         size: A4 ${isLandscape ? 'landscape' : 'portrait'};
-                        margin: 0 !important;
+                        margin: 0;
                     }
                 }
             `;
             document.head.appendChild(style);
         }
 
-        // دالة الطباعة المحسنة (تمنع التكرار)
+        // دالة الطباعة المحسنة (منع التكرار)
         function printPage() {
-            updatePrintVersion();
+            // منع التكرار
+            if (isPrinting) {
+                return;
+            }
             
-            // فصل وقت قصير للتأكد من التحديث
+            isPrinting = true;
+            const printButton = document.getElementById('print-button');
+            printButton.disabled = true;
+            printButton.textContent = 'جاري الطباعة...';
+            
+            // تحديث المحتوى
+            updatePreview();
+            
+            // تأخير قصير ثم الطباعة
             setTimeout(() => {
                 window.print();
-            }, 100);
+                
+                // إعادة تفعيل الزر بعد الطباعة
+                setTimeout(() => {
+                    isPrinting = false;
+                    printButton.disabled = false;
+                    printButton.textContent = 'طباعة الصفحة';
+                }, 1000);
+            }, 200);
         }
+
+        // منع الطباعة المتعددة عند الضغط على Ctrl+P
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                printPage();
+            }
+        });
 
         // إضافة مستمعي الأحداث لجميع عناصر التحكم
         function addEventListeners() {
@@ -979,11 +937,6 @@
 
             // مستمع لاتجاه الصفحة
             document.getElementById('orientation-landscape').addEventListener('change', updatePreview);
-
-            // مستمعات للإطار
-            document.getElementById('page-border').addEventListener('change', updatePreview);
-            document.getElementById('border-color').addEventListener('change', updatePreview);
-            document.getElementById('border-width').addEventListener('input', updatePreview);
         }
 
         // تهيئة الصفحة
