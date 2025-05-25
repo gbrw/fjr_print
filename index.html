@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>محرر النصوص التفاعلي</title>
+    <!-- مكتبة jsPDF لإنشاء PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -217,8 +220,8 @@
             box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
         }
 
-        .print-btn {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        .pdf-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
             color: white;
             border: none;
             padding: 18px 30px;
@@ -232,13 +235,13 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .print-btn:hover,
-        .print-btn:active {
+        .pdf-btn:hover,
+        .pdf-btn:active {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(238, 90, 36, 0.4);
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
         }
 
-        .print-btn:disabled {
+        .pdf-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
@@ -291,14 +294,28 @@
             text-align: center;
         }
 
-        /* iframe مخفي للطباعة */
-        #print-frame {
+        /* عنصر PDF مخفي */
+        .pdf-content {
             position: absolute;
             left: -9999px;
             top: -9999px;
-            width: 1px;
-            height: 1px;
-            visibility: hidden;
+            width: 794px; /* A4 width in pixels at 96 DPI */
+            height: 1123px; /* A4 height in pixels at 96 DPI */
+            background: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            text-align: center;
+            direction: rtl;
+        }
+
+        .pdf-text {
+            margin-bottom: 25px;
+            line-height: 1.2;
+            word-break: break-word;
+            text-align: center;
         }
 
         /* تحسينات للشاشات الكبيرة */
@@ -386,7 +403,7 @@
                 padding: 15px;
             }
             
-            .print-btn {
+            .pdf-btn {
                 padding: 20px;
                 font-size: 1.4em;
             }
@@ -478,7 +495,7 @@
                 transform: none;
             }
             
-            .print-btn:hover {
+            .pdf-btn:hover {
                 transform: none;
             }
         }
@@ -685,7 +702,7 @@
                             </div>
                         </div>
                     </div>
-                    <button class="print-btn" id="print-button">طباعة الصفحة</button>
+                    <button class="pdf-btn" id="pdf-button">📄 تحميل PDF</button>
                 </div>
             </div>
 
@@ -703,14 +720,17 @@
         </div>
     </div>
 
-    <!-- iframe مخفي للطباعة -->
-    <iframe id="print-frame" name="print-frame"></iframe>
+    <!-- عنصر PDF مخفي -->
+    <div class="pdf-content" id="pdf-content">
+        <div class="pdf-text" id="display-pdf"></div>
+        <div class="pdf-text" id="product-pdf"></div>
+        <div class="pdf-text" id="price-pdf"></div>
+    </div>
 
     <script>
         // متغيرات عامة
         let backgroundImageUrl = '';
-        let printInProgress = false;
-        let printTimeoutId = null;
+        let pdfInProgress = false;
 
         // تحديث قيمة الشفافية
         document.getElementById('background-opacity').addEventListener('input', function() {
@@ -760,21 +780,36 @@
         // تحديث المعاينة
         function updatePreview() {
             const previewPage = document.getElementById('preview-page');
+            const pdfContent = document.getElementById('pdf-content');
             const opacity = document.getElementById('background-opacity').value / 100;
             
             if (backgroundImageUrl) {
-                previewPage.style.backgroundImage = `url(${backgroundImageUrl})`;
-                previewPage.style.backgroundColor = `rgba(255, 255, 255, ${1 - opacity})`;
+                const bgStyle = `url(${backgroundImageUrl})`;
+                const bgColor = `rgba(255, 255, 255, ${1 - opacity})`;
+                
+                previewPage.style.backgroundImage = bgStyle;
+                previewPage.style.backgroundColor = bgColor;
                 previewPage.style.backgroundBlendMode = 'overlay';
+                
+                pdfContent.style.backgroundImage = bgStyle;
+                pdfContent.style.backgroundColor = bgColor;
+                pdfContent.style.backgroundBlendMode = 'overlay';
             } else {
                 previewPage.style.backgroundImage = 'none';
                 previewPage.style.backgroundColor = 'white';
+                pdfContent.style.backgroundImage = 'none';
+                pdfContent.style.backgroundColor = 'white';
             }
 
-            // تطبيق التنسيق على كل قسم
+            // تطبيق التنسيق على المعاينة
             applyTextStyle('display', document.getElementById('display-preview'));
             applyTextStyle('product', document.getElementById('product-preview'));
             applyTextStyle('price', document.getElementById('price-preview'));
+
+            // تطبيق التنسيق على PDF
+            applyTextStyle('display', document.getElementById('display-pdf'));
+            applyTextStyle('product', document.getElementById('product-pdf'));
+            applyTextStyle('price', document.getElementById('price-pdf'));
 
             // تحديث اتجاه الصفحة
             const isLandscape = document.getElementById('orientation-landscape').checked;
@@ -786,150 +821,85 @@
             }
         }
 
-        // دالة الطباعة باستخدام iframe (الحل النهائي)
-        function printViaIframe() {
-            // منع الطباعة المتعددة
-            if (printInProgress) {
-                console.log('طباعة محجوبة - عملية سابقة جارية');
+        // دالة إنشاء وتحميل PDF
+        async function generatePDF() {
+            // منع التكرار
+            if (pdfInProgress) {
                 return;
             }
 
-            printInProgress = true;
-            const printButton = document.getElementById('print-button');
-            printButton.disabled = true;
-            printButton.textContent = 'جاري الطباعة...';
+            pdfInProgress = true;
+            const pdfButton = document.getElementById('pdf-button');
+            pdfButton.disabled = true;
+            pdfButton.textContent = '🔄 جاري إنشاء PDF...';
 
-            console.log('بدء الطباعة...');
+            try {
+                // تحديث المحتوى
+                updatePreview();
 
-            // الحصول على البيانات
-            const displayText = document.getElementById('display-text').value;
-            const displayFont = document.getElementById('display-font').value;
-            const displaySize = document.getElementById('display-size').value;
-            const displayColor = document.getElementById('display-color').value;
-            const displayBold = document.getElementById('display-bold').checked;
-            const displayItalic = document.getElementById('display-italic').checked;
-            const displayUnderline = document.getElementById('display-underline').checked;
+                // الحصول على العنصر المخفي
+                const pdfElement = document.getElementById('pdf-content');
+                
+                // جعل العنصر مرئي مؤقتاً للتصوير
+                pdfElement.style.position = 'fixed';
+                pdfElement.style.left = '0';
+                pdfElement.style.top = '0';
+                pdfElement.style.zIndex = '-1';
 
-            const productText = document.getElementById('product-text').value;
-            const productFont = document.getElementById('product-font').value;
-            const productSize = document.getElementById('product-size').value;
-            const productColor = document.getElementById('product-color').value;
-            const productBold = document.getElementById('product-bold').checked;
-            const productItalic = document.getElementById('product-italic').checked;
-            const productUnderline = document.getElementById('product-underline').checked;
+                // انتظار قصير للتأكد من التحديث
+                await new Promise(resolve => setTimeout(resolve, 100));
 
-            const priceText = document.getElementById('price-text').value;
-            const priceFont = document.getElementById('price-font').value;
-            const priceSize = document.getElementById('price-size').value;
-            const priceColor = document.getElementById('price-color').value;
-            const priceBold = document.getElementById('price-bold').checked;
-            const priceItalic = document.getElementById('price-italic').checked;
-            const priceUnderline = document.getElementById('price-underline').checked;
+                // تصوير العنصر
+                const canvas = await html2canvas(pdfElement, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    width: 794,
+                    height: 1123
+                });
 
-            const opacity = document.getElementById('background-opacity').value / 100;
-            const isLandscape = document.getElementById('orientation-landscape').checked;
+                // إخفاء العنصر مرة أخرى
+                pdfElement.style.position = 'absolute';
+                pdfElement.style.left = '-9999px';
+                pdfElement.style.top = '-9999px';
 
-            // الحصول على iframe
-            const iframe = document.getElementById('print-frame');
+                // إنشاء PDF
+                const { jsPDF } = window.jspdf;
+                const isLandscape = document.getElementById('orientation-landscape').checked;
+                const pdf = new jsPDF({
+                    orientation: isLandscape ? 'landscape' : 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
 
-            // إنشاء محتوى HTML للطباعة
-            const printHTML = `
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>طباعة</title>
-    <style>
-        @page {
-            size: A4 ${isLandscape ? 'landscape' : 'portrait'};
-            margin: 0;
-        }
-        body {
-            margin: 0;
-            padding: 20mm;
-            background: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            text-align: center;
-            direction: rtl;
-            font-family: Arial, sans-serif;
-            ${backgroundImageUrl ? `background-image: url(${backgroundImageUrl}); background-size: cover; background-position: center; background-repeat: no-repeat; background-color: rgba(255, 255, 255, ${1 - opacity}); background-blend-mode: overlay;` : ''}
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        .text-item {
-            margin-bottom: 25px;
-            line-height: 1.2;
-            word-break: break-word;
-            text-align: center;
-        }
-        @media print {
-            body {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                // إضافة الصورة إلى PDF
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = isLandscape ? 297 : 210;
+                const imgHeight = isLandscape ? 210 : 297;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+                // تحميل PDF
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+                const filename = `طباعة_${timestamp}.pdf`;
+                pdf.save(filename);
+
+                console.log('تم إنشاء PDF بنجاح');
+
+            } catch (error) {
+                console.error('خطأ في إنشاء PDF:', error);
+                alert('حدث خطأ في إنشاء PDF. يرجى المحاولة مرة أخرى.');
+            } finally {
+                // إعادة تفعيل الزر
+                pdfInProgress = false;
+                pdfButton.disabled = false;
+                pdfButton.textContent = '📄 تحميل PDF';
             }
         }
-    </style>
-</head>
-<body>
-    ${displayText ? `<div class="text-item" style="font-family: ${displayFont}; font-size: ${displaySize}px; color: ${displayColor}; font-weight: ${displayBold ? 'bold' : 'normal'}; font-style: ${displayItalic ? 'italic' : 'normal'}; text-decoration: ${displayUnderline ? 'underline' : 'none'};">${displayText}</div>` : ''}
-    ${productText ? `<div class="text-item" style="font-family: ${productFont}; font-size: ${productSize}px; color: ${productColor}; font-weight: ${productBold ? 'bold' : 'normal'}; font-style: ${productItalic ? 'italic' : 'normal'}; text-decoration: ${productUnderline ? 'underline' : 'none'};">${productText}</div>` : ''}
-    ${priceText ? `<div class="text-item" style="font-family: ${priceFont}; font-size: ${priceSize}px; color: ${priceColor}; font-weight: ${priceBold ? 'bold' : 'normal'}; font-style: ${priceItalic ? 'italic' : 'normal'}; text-decoration: ${priceUnderline ? 'underline' : 'none'};">${priceText}</div>` : ''}
-</body>
-</html>`;
 
-            // تحميل المحتوى في iframe
-            iframe.onload = function() {
-                try {
-                    console.log('iframe محمل، بدء الطباعة');
-                    iframe.contentWindow.focus();
-                    iframe.contentWindow.print();
-                    console.log('تم تنفيذ أمر الطباعة');
-                } catch (error) {
-                    console.error('خطأ في الطباعة:', error);
-                }
-
-                // إعادة تفعيل الزر بعد 2 ثانية
-                printTimeoutId = setTimeout(() => {
-                    printInProgress = false;
-                    printButton.disabled = false;
-                    printButton.textContent = 'طباعة الصفحة';
-                    console.log('تم رفع القفل');
-                }, 2000);
-            };
-
-            // كتابة HTML في iframe
-            iframe.contentDocument.open();
-            iframe.contentDocument.write(printHTML);
-            iframe.contentDocument.close();
-        }
-
-        // ربط زر الطباعة
-        document.getElementById('print-button').addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            printViaIframe();
-        });
-
-        // منع Ctrl+P
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'p') {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                printViaIframe();
-            }
-        });
-
-        // منع أي أحداث طباعة إضافية
-        window.addEventListener('beforeprint', function(e) {
-            if (printInProgress) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-            }
-        });
+        // ربط زر PDF
+        document.getElementById('pdf-button').addEventListener('click', generatePDF);
 
         // إضافة مستمعي الأحداث
         function addEventListeners() {
@@ -948,19 +918,11 @@
             document.getElementById('orientation-landscape').addEventListener('change', updatePreview);
         }
 
-        // تنظيف عند إغلاق الصفحة
-        window.addEventListener('beforeunload', function() {
-            if (printTimeoutId) {
-                clearTimeout(printTimeoutId);
-            }
-            printInProgress = false;
-        });
-
         // تهيئة الصفحة
         document.addEventListener('DOMContentLoaded', function() {
             addEventListeners();
             updatePreview();
-            console.log('الصفحة جاهزة - نظام iframe للطباعة مفعل');
+            console.log('نظام PDF جاهز للاستخدام');
         });
     </script>
 </body>
