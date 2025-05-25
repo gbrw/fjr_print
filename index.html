@@ -291,58 +291,52 @@
             text-align: center;
         }
 
-        /* محتوى الطباعة - مخفي تماماً */
-        #print-area {
-            position: absolute;
-            left: -9999px;
-            top: -9999px;
-            width: 210mm;
-            height: 297mm;
-            background: white;
-            visibility: hidden;
-        }
-
-        /* CSS للطباعة */
+        /* طباعة مباشرة بدون عناصر مخفية */
         @media print {
-            @page {
-                size: A4;
-                margin: 0;
-            }
-            
+            /* إخفاء كل شيء أولاً */
             body * {
                 visibility: hidden !important;
             }
             
-            #print-area,
-            #print-area * {
+            /* إظهار المعاينة فقط للطباعة */
+            .preview-page,
+            .preview-page * {
                 visibility: visible !important;
             }
             
-            #print-area {
+            /* تنسيق صفحة الطباعة */
+            .preview-page {
                 position: fixed !important;
-                left: 0 !important;
                 top: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                padding: 20mm !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
                 margin: 0 !important;
-                background: white !important;
-                z-index: 99999 !important;
+                padding: 20mm !important;
+                background-size: cover !important;
+                background-position: center !important;
+                background-repeat: no-repeat !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
                 display: flex !important;
                 flex-direction: column !important;
                 justify-content: flex-start !important;
                 align-items: center !important;
                 text-align: center !important;
                 direction: rtl !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
             }
             
-            .print-text {
+            .preview-text {
                 margin-bottom: 25px !important;
                 text-align: center !important;
                 line-height: 1.2 !important;
                 word-break: break-word !important;
+                page-break-inside: avoid !important;
+            }
+            
+            @page {
+                size: A4;
+                margin: 0 !important;
             }
         }
 
@@ -350,7 +344,7 @@
         @media print and (orientation: landscape) {
             @page {
                 size: A4 landscape;
-                margin: 0;
+                margin: 0 !important;
             }
         }
 
@@ -738,7 +732,7 @@
                             </div>
                         </div>
                     </div>
-                    <button class="print-btn" id="print-button" onclick="printPage()">طباعة الصفحة</button>
+                    <button class="print-btn" id="print-button">طباعة الصفحة</button>
                 </div>
             </div>
 
@@ -756,17 +750,13 @@
         </div>
     </div>
 
-    <!-- منطقة الطباعة المخفية -->
-    <div id="print-area">
-        <div class="print-text" id="display-print"></div>
-        <div class="print-text" id="product-print"></div>
-        <div class="print-text" id="price-print"></div>
-    </div>
-
     <script>
         // متغيرات عامة
         let backgroundImageUrl = '';
-        let isPrinting = false; // منع التكرار
+        
+        // منع التكرار بشكل قاطع
+        let printLock = false;
+        let printTimeoutId = null;
 
         // تحديث قيمة الشفافية
         document.getElementById('background-opacity').addEventListener('input', function() {
@@ -787,7 +777,7 @@
             }
         });
 
-        // تطبيق التنسيق على النص (مع محاذاة توسيط ثابتة)
+        // تطبيق التنسيق على النص
         function applyTextStyle(section, element) {
             const text = document.getElementById(section + '-text').value;
             const font = document.getElementById(section + '-font').value;
@@ -804,7 +794,7 @@
             element.style.fontWeight = bold ? 'bold' : 'normal';
             element.style.fontStyle = italic ? 'italic' : 'normal';
             element.style.textDecoration = underline ? 'underline' : 'none';
-            element.style.textAlign = 'center'; // دائماً توسيط
+            element.style.textAlign = 'center';
 
             if (!text) {
                 element.style.display = 'none';
@@ -815,38 +805,22 @@
 
         // تحديث المعاينة
         function updatePreview() {
-            // تطبيق الخلفية
             const previewPage = document.getElementById('preview-page');
-            const printArea = document.getElementById('print-area');
             const opacity = document.getElementById('background-opacity').value / 100;
             
             if (backgroundImageUrl) {
-                const bgStyle = `url(${backgroundImageUrl})`;
-                const bgColor = `rgba(255, 255, 255, ${1 - opacity})`;
-                
-                previewPage.style.backgroundImage = bgStyle;
-                previewPage.style.backgroundColor = bgColor;
+                previewPage.style.backgroundImage = `url(${backgroundImageUrl})`;
+                previewPage.style.backgroundColor = `rgba(255, 255, 255, ${1 - opacity})`;
                 previewPage.style.backgroundBlendMode = 'overlay';
-                
-                printArea.style.backgroundImage = bgStyle;
-                printArea.style.backgroundColor = bgColor;
-                printArea.style.backgroundBlendMode = 'overlay';
             } else {
                 previewPage.style.backgroundImage = 'none';
                 previewPage.style.backgroundColor = 'white';
-                printArea.style.backgroundImage = 'none';
-                printArea.style.backgroundColor = 'white';
             }
 
             // تطبيق التنسيق على كل قسم
             applyTextStyle('display', document.getElementById('display-preview'));
             applyTextStyle('product', document.getElementById('product-preview'));
             applyTextStyle('price', document.getElementById('price-preview'));
-
-            // تحديث نسخة الطباعة
-            applyTextStyle('display', document.getElementById('display-print'));
-            applyTextStyle('product', document.getElementById('product-print'));
-            applyTextStyle('price', document.getElementById('price-print'));
 
             // تحديث اتجاه الصفحة
             const isLandscape = document.getElementById('orientation-landscape').checked;
@@ -857,7 +831,7 @@
                 container.style.aspectRatio = '3/4';
             }
 
-            // تحديث CSS الطباعة حسب الاتجاه
+            // تحديث CSS الطباعة
             updatePrintOrientation();
         }
 
@@ -865,13 +839,13 @@
         function updatePrintOrientation() {
             const isLandscape = document.getElementById('orientation-landscape').checked;
             
-            // إزالة أي style سابق للطباعة
+            // إزالة أي style سابق
             const existingStyle = document.getElementById('print-orientation-style');
             if (existingStyle) {
                 existingStyle.remove();
             }
 
-            // إضافة style جديد للطباعة
+            // إضافة style جديد
             const style = document.createElement('style');
             style.id = 'print-orientation-style';
             style.textContent = `
@@ -885,43 +859,72 @@
             document.head.appendChild(style);
         }
 
-        // دالة الطباعة المحسنة (منع التكرار)
-        function printPage() {
-            // منع التكرار
-            if (isPrinting) {
-                return;
+        // دالة الطباعة الجديدة تماماً (بدون تكرار)
+        function simplePrint() {
+            // فحص القفل
+            if (printLock) {
+                console.log('طباعة محجوبة - تنفيذ سابق جاري');
+                return false;
             }
+
+            // تفعيل القفل
+            printLock = true;
             
-            isPrinting = true;
+            // تعطيل الزر
             const printButton = document.getElementById('print-button');
+            const originalText = printButton.textContent;
             printButton.disabled = true;
-            printButton.textContent = 'جاري الطباعة...';
-            
-            // تحديث المحتوى
+            printButton.textContent = 'طباعة...';
+
+            console.log('بدء الطباعة');
+
+            // تحديث الإعدادات
             updatePreview();
-            
-            // تأخير قصير ثم الطباعة
-            setTimeout(() => {
+
+            // تنفيذ الطباعة
+            try {
                 window.print();
-                
-                // إعادة تفعيل الزر بعد الطباعة
-                setTimeout(() => {
-                    isPrinting = false;
-                    printButton.disabled = false;
-                    printButton.textContent = 'طباعة الصفحة';
-                }, 1000);
-            }, 200);
+            } catch (error) {
+                console.error('خطأ في الطباعة:', error);
+            }
+
+            // إعادة تفعيل الزر بعد تأخير
+            printTimeoutId = setTimeout(() => {
+                printLock = false;
+                printButton.disabled = false;
+                printButton.textContent = originalText;
+                console.log('انتهاء الطباعة - تم رفع القفل');
+            }, 2000); // تأخير 2 ثانية
+
+            return true;
         }
 
-        // منع الطباعة المتعددة عند الضغط على Ctrl+P
+        // ربط الزر بالدالة الجديدة
+        document.getElementById('print-button').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            simplePrint();
+        });
+
+        // منع اختصار Ctrl+P من التكرار
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 'p') {
                 e.preventDefault();
-                printPage();
+                e.stopPropagation();
+                simplePrint();
             }
         });
 
-        // إضافة مستمعي الأحداث لجميع عناصر التحكم
+        // منع أي أحداث طباعة أخرى
+        window.addEventListener('beforeprint', function(e) {
+            if (printLock) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+
+        // إضافة مستمعي الأحداث
         function addEventListeners() {
             const sections = ['display', 'product', 'price'];
             
@@ -935,7 +938,6 @@
                 document.getElementById(section + '-underline').addEventListener('change', updatePreview);
             });
 
-            // مستمع لاتجاه الصفحة
             document.getElementById('orientation-landscape').addEventListener('change', updatePreview);
         }
 
@@ -943,6 +945,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             addEventListeners();
             updatePreview();
+            console.log('الصفحة جاهزة - نظام الطباعة مفعل');
+        });
+
+        // تنظيف عند إغلاق الصفحة
+        window.addEventListener('beforeunload', function() {
+            if (printTimeoutId) {
+                clearTimeout(printTimeoutId);
+            }
+            printLock = false;
         });
     </script>
 </body>
