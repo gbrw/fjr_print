@@ -513,7 +513,7 @@
         </div>
         
         <div class="status-bar" id="status-bar">
-            📅 2025-05-25 | ⏰ 20:47:03 UTC | 👤 ghaith | 🖨️ نظام طباعة محسن مع عرض المحتوى
+            📅 2025-05-25 | ⏰ 22:00:14 UTC | 👤 gbrw | 🖨️ نظام طباعة محسن مع عرض المحتوى
         </div>
         
         <div class="main-content">
@@ -753,9 +753,9 @@
 
         // معلومات المستخدم والنظام
         const systemInfo = {
-            user: 'ghaith',
+            user: 'gbrw',
             date: '2025-05-25',
-            time: '20:47:03',
+            time: '22:00:14',
             timezone: 'UTC'
         };
 
@@ -1115,7 +1115,7 @@
                 pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
                 
                 // تحميل PDF
-                const fileName = `فجر_عرض_خاص_${new Date().toISOString().split('T')[0]}.pdf`;
+                const fileName = `فجر_عرض_خاص_${systemInfo.date}.pdf`;
                 pdf.save(fileName);
 
                 updateStatus(`📄 تم تحميل ملف PDF: ${fileName}`);
