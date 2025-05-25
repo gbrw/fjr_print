@@ -291,61 +291,16 @@
             text-align: center;
         }
 
-        /* طباعة مباشرة بدون عناصر مخفية */
-        @media print {
-            /* إخفاء كل شيء أولاً */
-            body * {
-                visibility: hidden !important;
-            }
-            
-            /* إظهار المعاينة فقط للطباعة */
-            .preview-page,
-            .preview-page * {
-                visibility: visible !important;
-            }
-            
-            /* تنسيق صفحة الطباعة */
-            .preview-page {
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100vw !important;
-                height: 100vh !important;
-                margin: 0 !important;
-                padding: 20mm !important;
-                background-size: cover !important;
-                background-position: center !important;
-                background-repeat: no-repeat !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: flex-start !important;
-                align-items: center !important;
-                text-align: center !important;
-                direction: rtl !important;
-            }
-            
-            .preview-text {
-                margin-bottom: 25px !important;
-                text-align: center !important;
-                line-height: 1.2 !important;
-                word-break: break-word !important;
-                page-break-inside: avoid !important;
-            }
-            
-            @page {
-                size: A4;
-                margin: 0 !important;
-            }
-        }
-
-        /* للطباعة الأفقية */
-        @media print and (orientation: landscape) {
-            @page {
-                size: A4 landscape;
-                margin: 0 !important;
-            }
+        /* عنصر الطباعة المخفي تماماً */
+        .print-only-content {
+            position: absolute;
+            left: -999999px;
+            top: -999999px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
         }
 
         /* تحسينات للشاشات الكبيرة */
@@ -750,13 +705,13 @@
         </div>
     </div>
 
+    <!-- عنصر الطباعة المخفي -->
+    <div class="print-only-content" id="print-only-content"></div>
+
     <script>
         // متغيرات عامة
         let backgroundImageUrl = '';
-        
-        // منع التكرار بشكل قاطع
-        let printLock = false;
-        let printTimeoutId = null;
+        let isCurrentlyPrinting = false;
 
         // تحديث قيمة الشفافية
         document.getElementById('background-opacity').addEventListener('input', function() {
@@ -830,97 +785,118 @@
             } else {
                 container.style.aspectRatio = '3/4';
             }
-
-            // تحديث CSS الطباعة
-            updatePrintOrientation();
         }
 
-        // تحديث اتجاه الطباعة
-        function updatePrintOrientation() {
-            const isLandscape = document.getElementById('orientation-landscape').checked;
-            
-            // إزالة أي style سابق
-            const existingStyle = document.getElementById('print-orientation-style');
-            if (existingStyle) {
-                existingStyle.remove();
+        // دالة الطباعة بنافذة جديدة (الحل النهائي)
+        function printContent() {
+            // منع التكرار
+            if (isCurrentlyPrinting) {
+                return;
             }
-
-            // إضافة style جديد
-            const style = document.createElement('style');
-            style.id = 'print-orientation-style';
-            style.textContent = `
-                @media print {
-                    @page {
-                        size: A4 ${isLandscape ? 'landscape' : 'portrait'};
-                        margin: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        // دالة الطباعة الجديدة تماماً (بدون تكرار)
-        function simplePrint() {
-            // فحص القفل
-            if (printLock) {
-                console.log('طباعة محجوبة - تنفيذ سابق جاري');
-                return false;
-            }
-
-            // تفعيل القفل
-            printLock = true;
             
-            // تعطيل الزر
+            isCurrentlyPrinting = true;
             const printButton = document.getElementById('print-button');
-            const originalText = printButton.textContent;
             printButton.disabled = true;
-            printButton.textContent = 'طباعة...';
+            printButton.textContent = 'جاري الطباعة...';
 
-            console.log('بدء الطباعة');
+            // الحصول على البيانات
+            const displayText = document.getElementById('display-text').value;
+            const displayFont = document.getElementById('display-font').value;
+            const displaySize = document.getElementById('display-size').value;
+            const displayColor = document.getElementById('display-color').value;
+            const displayBold = document.getElementById('display-bold').checked;
+            const displayItalic = document.getElementById('display-italic').checked;
+            const displayUnderline = document.getElementById('display-underline').checked;
 
-            // تحديث الإعدادات
-            updatePreview();
+            const productText = document.getElementById('product-text').value;
+            const productFont = document.getElementById('product-font').value;
+            const productSize = document.getElementById('product-size').value;
+            const productColor = document.getElementById('product-color').value;
+            const productBold = document.getElementById('product-bold').checked;
+            const productItalic = document.getElementById('product-italic').checked;
+            const productUnderline = document.getElementById('product-underline').checked;
 
-            // تنفيذ الطباعة
-            try {
-                window.print();
-            } catch (error) {
-                console.error('خطأ في الطباعة:', error);
-            }
+            const priceText = document.getElementById('price-text').value;
+            const priceFont = document.getElementById('price-font').value;
+            const priceSize = document.getElementById('price-size').value;
+            const priceColor = document.getElementById('price-color').value;
+            const priceBold = document.getElementById('price-bold').checked;
+            const priceItalic = document.getElementById('price-italic').checked;
+            const priceUnderline = document.getElementById('price-underline').checked;
 
-            // إعادة تفعيل الزر بعد تأخير
-            printTimeoutId = setTimeout(() => {
-                printLock = false;
-                printButton.disabled = false;
-                printButton.textContent = originalText;
-                console.log('انتهاء الطباعة - تم رفع القفل');
-            }, 2000); // تأخير 2 ثانية
+            const opacity = document.getElementById('background-opacity').value / 100;
+            const isLandscape = document.getElementById('orientation-landscape').checked;
 
-            return true;
+            // إنشاء محتوى HTML للطباعة
+            const printHTML = `
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>طباعة</title>
+    <style>
+        @page {
+            size: A4 ${isLandscape ? 'landscape' : 'portrait'};
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 20mm;
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            text-align: center;
+            direction: rtl;
+            font-family: Arial, sans-serif;
+            ${backgroundImageUrl ? `background-image: url(${backgroundImageUrl}); background-size: cover; background-position: center; background-repeat: no-repeat; background-color: rgba(255, 255, 255, ${1 - opacity}); background-blend-mode: overlay;` : ''}
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .text-item {
+            margin-bottom: 25px;
+            line-height: 1.2;
+            word-break: break-word;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    ${displayText ? `<div class="text-item" style="font-family: ${displayFont}; font-size: ${displaySize}px; color: ${displayColor}; font-weight: ${displayBold ? 'bold' : 'normal'}; font-style: ${displayItalic ? 'italic' : 'normal'}; text-decoration: ${displayUnderline ? 'underline' : 'none'};">${displayText}</div>` : ''}
+    ${productText ? `<div class="text-item" style="font-family: ${productFont}; font-size: ${productSize}px; color: ${productColor}; font-weight: ${productBold ? 'bold' : 'normal'}; font-style: ${productItalic ? 'italic' : 'normal'}; text-decoration: ${productUnderline ? 'underline' : 'none'};">${productText}</div>` : ''}
+    ${priceText ? `<div class="text-item" style="font-family: ${priceFont}; font-size: ${priceSize}px; color: ${priceColor}; font-weight: ${priceBold ? 'bold' : 'normal'}; font-style: ${priceItalic ? 'italic' : 'normal'}; text-decoration: ${priceUnderline ? 'underline' : 'none'};">${priceText}</div>` : ''}
+</body>
+</html>`;
+
+            // فتح نافذة جديدة للطباعة
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printHTML);
+            printWindow.document.close();
+
+            // انتظار تحميل المحتوى ثم الطباعة
+            printWindow.onload = function() {
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                    
+                    // إعادة تفعيل الزر
+                    isCurrentlyPrinting = false;
+                    printButton.disabled = false;
+                    printButton.textContent = 'طباعة الصفحة';
+                }, 500);
+            };
         }
 
-        // ربط الزر بالدالة الجديدة
-        document.getElementById('print-button').addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            simplePrint();
-        });
+        // ربط زر الطباعة
+        document.getElementById('print-button').addEventListener('click', printContent);
 
-        // منع اختصار Ctrl+P من التكرار
+        // منع Ctrl+P
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 'p') {
                 e.preventDefault();
-                e.stopPropagation();
-                simplePrint();
-            }
-        });
-
-        // منع أي أحداث طباعة أخرى
-        window.addEventListener('beforeprint', function(e) {
-            if (printLock) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
+                printContent();
             }
         });
 
@@ -945,15 +921,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             addEventListeners();
             updatePreview();
-            console.log('الصفحة جاهزة - نظام الطباعة مفعل');
-        });
-
-        // تنظيف عند إغلاق الصفحة
-        window.addEventListener('beforeunload', function() {
-            if (printTimeoutId) {
-                clearTimeout(printTimeoutId);
-            }
-            printLock = false;
         });
     </script>
 </body>
