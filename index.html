@@ -1,1275 +1,772 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفحة تفاعلية</title>
+    <title>محرر النصوص التفاعلي</title>
     <style>
         * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
         .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
-        
-        .controls {
-            flex: 1;
-            min-width: 500px;
-        }
-        
-        .preview-container {
-            flex: 1;
-            min-width: 400px;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-        
-        .group-box {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            background-color: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        
-        .group-box h2 {
-            margin-top: 0;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            color: #444;
-        }
-        
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-        
-        .form-row label {
-            width: 100px;
-            margin-left: 10px;
-        }
-        
-        .form-row input,
-        .form-row select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            flex: 1;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .radio-group {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .radio-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .preview {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            min-height: 400px;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            overflow: auto;
-        }
-        
-        .preview-content {
-            margin-bottom: 15px;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        button {
-            background-color: #4CAF50;
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        button.secondary {
-            background-color: #2196F3;
-        }
-        
-        button.tertiary {
-            background-color: #9E9E9E;
-        }
-        
-        button:hover {
-            opacity: 0.9;
-        }
-        
-        /* تنسيقات الطباعة الأساسية (لكلا الاتجاهين) */
-        @media print {
-            html, body {
-                margin: 0;
-                padding: 0;
-            }
-            
-            /* إجبار المتصفح على طباعة الخلفيات والألوان */
-            html {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            
-            body {
-                background-color: white;
-            }
-            
-            .controls, .autosave-indicator, .message {
-                display: none !important;
-            }
-            
-            .container {
-                display: block !important;
-                width: 100% !important;
-                height: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            
-            .preview-container {
-                width: 100% !important;
-                height: 100% !important;
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                bottom: 0 !important;
-            }
-            
-            .preview {
-                border: none !important;
-                box-shadow: none !important;
-                width: 100% !important;
-                height: 100% !important;
-                padding: 10mm !important;
-                margin: 0 !important;
-                min-height: auto !important;
-            }
-            
-            .group-box {
-                border: none !important;
-                box-shadow: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            
-            .group-box h2 {
-                display: none !important;
-            }
-
-            .preview-background {
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                bottom: 0 !important;
-                background-size: cover !important;
-                background-position: center !important;
-                display: block !important;
-                visibility: visible !important;
-                z-index: 0 !important;
-            }
-            
-            .preview-content {
-                position: relative !important;
-                z-index: 1 !important;
-            }
-        }
-        
-        /* تنسيق الطباعة للورقة العمودية */
-        .page-vertical {
-            page: portrait;
-        }
-        
-        @page portrait {
-            size: A4 portrait;
-        }
-        
-        @media print and (orientation: portrait) {
-            .print-content {
-                width: 210mm;
-                height: 297mm;
-            }
-        }
-        
-        /* تنسيق الطباعة للورقة الأفقية */
-        .page-horizontal {
-            page: landscape;
-        }
-        
-        @page landscape {
-            size: A4 landscape;
-        }
-        
-        @media print and (orientation: landscape) {
-            .print-content {
-                width: 297mm;
-                height: 210mm;
-            }
-        }
-        
-        /* التوجيه الأفقي والعمودي للمعاينة */
-        .horizontal-layout {
-            display: flex;
-            flex-direction: row;
-            gap: 15px;
+            text-align: center;
+            padding: 30px;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .vertical-layout {
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .controls-section {
             display: flex;
             flex-direction: column;
+            gap: 25px;
         }
 
-        /* تخصيص شريط التمرير للشفافية */
-        input[type="range"] {
+        .group-box {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 3px solid #e1f5fe;
+            transition: all 0.3s ease;
+        }
+
+        .group-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: #4facfe;
+        }
+
+        .group-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4facfe;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+            font-size: 1.1em;
+        }
+
+        .form-control {
             width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1f5fe;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
 
-        /* خصائص إضافية للمعاينة */
-        .preview-wrapper {
-            position: relative;
-            height: 100%;
+        .form-control:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2);
+            transform: scale(1.02);
         }
 
-        .preview-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-size: cover;
-            background-position: center;
-            z-index: 0;
-        }
-
-        .preview-content {
-            position: relative;
-            z-index: 1;
-        }
-        
-        /* نافذة الرسائل */
-        .message {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            display: none;
-            z-index: 1000;
-            animation: fadeIn 0.3s, fadeOut 0.3s 2s forwards;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-
-        /* مؤشر الحفظ التلقائي */
-        .autosave-indicator {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 13px;
-            z-index: 1000;
-        }
-
-        .autosave-indicator.saving {
-            color: #ffeb3b;
-        }
-        
-        /* معاينة الطباعة */
-        .print-preview {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 9999;
-            overflow: auto;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .print-preview.active {
+        .checkbox-group, .radio-group {
             display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
         }
-        
-        .print-preview-content {
-            background-color: white;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+
+        .checkbox-item, .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .checkbox-item:hover, .radio-item:hover {
+            background: #e3f2fd;
+            border-color: #4facfe;
+        }
+
+        .checkbox-item input, .radio-item input {
+            margin: 0;
+            transform: scale(1.2);
+        }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .range-slider {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: #e1f5fe;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4facfe;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4facfe;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .range-value {
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 15px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .print-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(238, 90, 36, 0.4);
+        }
+
+        .preview-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 3px solid #e1f5fe;
+            height: fit-content;
+        }
+
+        .preview-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4facfe;
+            text-align: center;
+        }
+
+        .preview-container {
+            border: 3px dashed #4facfe;
+            border-radius: 12px;
+            padding: 30px;
+            min-height: 400px;
+            background: white;
             position: relative;
             overflow: hidden;
-            margin: 20px;
         }
-        
-        .print-preview-content.portrait {
-            width: 210mm;
-            height: 297mm;
-            max-height: 80vh;
-            max-width: 80vw;
-            aspect-ratio: 210/297;
+
+        .preview-page {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
-        
-        .print-preview-content.landscape {
-            width: 297mm;
-            height: 210mm;
-            max-height: 80vh;
-            max-width: 80vw;
-            aspect-ratio: 297/210;
+
+        .preview-text {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            word-wrap: break-word;
         }
-        
-        .print-preview-actions {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            .print-content, .print-content * {
+                visibility: visible;
+            }
+            
+            .print-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background: white;
+                padding: 20px;
+            }
+            
+            .print-page {
+                width: 100%;
+                height: 100vh;
+                background-size: cover !important;
+                background-position: center !important;
+                background-repeat: no-repeat !important;
+            }
+            
+            .print-text {
+                line-height: 1.6;
+                word-wrap: break-word;
+                margin-bottom: 15px;
+            }
+            
+            @page {
+                margin: 0;
+                size: auto;
+            }
         }
-        
-        .print-preview .close-btn {
-            background-color: #f44336;
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
         }
-        
-        .print-preview .print-btn {
-            background-color: #2196F3;
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+                font-size: 2em;
+            }
+            
+            .checkbox-group, .radio-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="message" id="message">تم حفظ الإعدادات بنجاح</div>
-    <div class="autosave-indicator" id="autosave-indicator">آخر حفظ تلقائي: لم يتم الحفظ بعد</div>
     <div class="container">
-        <div class="controls">
-            <!-- قسم العرض -->
-            <div class="group-box">
-                <h2>العرض</h2>
-                <div class="form-row">
-                    <label for="title-text">النص:</label>
-                    <input type="text" id="title-text" value="عنوان العرض">
-                </div>
-                <div class="form-row">
-                    <label for="title-font">نوع الخط:</label>
-                    <select id="title-font">
-                        <option value="Arial">Arial</option>
-                        <option value="'Segoe UI'">Segoe UI</option>
-                        <option value="'Times New Roman'">Times New Roman</option>
-                        <option value="'Courier New'">Courier New</option>
-                        <option value="Tahoma">Tahoma</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <label for="title-size">حجم الخط:</label>
-                    <input type="number" id="title-size" min="10" max="72" value="24">
-                </div>
-                <div class="form-row">
-                    <label for="title-color">اللون:</label>
-                    <select id="title-color">
-                        <option value="black">أسود</option>
-                        <option value="red">أحمر</option>
-                        <option value="blue">أزرق</option>
-                        <option value="green">أخضر</option>
-                        <option value="#800080">بنفسجي</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <label>خصائص النص:</label>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="title-bold">
-                            <label for="title-bold">غامق</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="title-italic">
-                            <label for="title-italic">مائل</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="title-underline">
-                            <label for="title-underline">تحته خط</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <label>المحاذاة:</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" name="title-align" id="title-align-right" value="right" checked>
-                            <label for="title-align-right">يمين</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" name="title-align" id="title-align-center" value="center">
-                            <label for="title-align-center">وسط</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" name="title-align" id="title-align-left" value="left">
-                            <label for="title-align-left">يسار</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- قسم المنتج -->
-            <div class="group-box">
-                <h2>المنتج</h2>
-                <div class="form-row">
-                    <label for="product-text">النص:</label>
-                    <input type="text" id="product-text" value="اسم المنتج">
-                </div>
-                <div class="form-row">
-                    <label for="product-font">نوع الخط:</label>
-                    <select id="product-font">
-                        <option value="Arial">Arial</option>
-                        <option value="'Segoe UI'" selected>Segoe UI</option>
-                        <option value="'Times New Roman'">Times New Roman</option>
-                        <option value="'Courier New'">Courier New</option>
-                        <option value="Tahoma">Tahoma</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <label for="product-size">حجم الخط:</label>
-                    <input type="number" id="product-size" min="10" max="72" value="18">
-                </div>
-                <div class="form-row">
-                    <label for="product-color">اللون:</label>
-                    <select id="product-color">
-                        <option value="black">أسود</option>
-                        <option value="red">أحمر</option>
-                        <option value="blue" selected>أزرق</option>
-                        <option value="green">أخضر</option>
-                        <option value="#800080">بنفسجي</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <label>خصائص النص:</label>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="product-bold" checked>
-                            <label for="product-bold">غامق</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="product-italic">
-                            <label for="product-italic">مائل</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="product-underline">
-                            <label for="product-underline">تحته خط</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <label>المحاذاة:</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" name="product-align" id="product-align-right" value="right" checked>
-                            <label for="product-align-right">يمين</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" name="product-align" id="product-align-center" value="center">
-                            <label for="product-align-center">وسط</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" name="product-align" id="product-align-left" value="left">
-                            <label for="product-align-left">يسار</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- قسم السعر -->
-            <div class="group-box">
-                <h2>السعر</h2>
-                <div class="form-row">
-                    <label for="price-text">النص:</label>
-                    <input type="text" id="price-text" value="99.99 ريال">
-                </div>
-                <div class="form-row">
-                    <label for="price-font">نوع الخط:</label>
-                    <select id="price-font">
-                        <option value="Arial">Arial</option>
-                        <option value="'Segoe UI'">Segoe UI</option>
-                        <option value="'Times New Roman'">Times New Roman</option>
-                        <option value="'Courier New'" selected>Courier New</option>
-                        <option value="Tahoma">Tahoma</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <label for="price-size">حجم الخط:</label>
-                    <input type="number" id="price-size" min="10" max="72" value="20">
-                </div>
-                <div class="form-row">
-                    <label for="price-color">اللون:</label>
-                    <select id="price-color">
-                        <option value="black">أسود</option>
-                        <option value="red" selected>أحمر</option>
-                        <option value="blue">أزرق</option>
-                        <option value="green">أخضر</option>
-                        <option value="#800080">بنفسجي</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <label>خصائص النص:</label>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="price-bold" checked>
-                            <label for="price-bold">غامق</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="price-italic">
-                            <label for="price-italic">مائل</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="price-underline">
-                            <label for="price-underline">تحته خط</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <label>المحاذاة:</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" name="price-align" id="price-align-right" value="right">
-                            <label for="price-align-right">يمين</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" name="price-align" id="price-align-center" value="center" checked>
-                            <label for="price-align-center">وسط</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" name="price-align" id="price-align-left" value="left">
-                            <label for="price-align-left">يسار</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- قسم الخلفية -->
-            <div class="group-box">
-                <h2>الخلفية</h2>
-                <div class="form-row">
-                    <label for="background-image">صورة الخلفية:</label>
-                    <input type="file" id="background-image" accept="image/*">
-                </div>
-                <div class="form-row">
-                    <label for="background-opacity">الشفافية:</label>
-                    <input type="range" id="background-opacity" min="0" max="1" step="0.1" value="1">
-                </div>
-            </div>
-
-            <!-- قسم إعدادات الصفحة -->
-            <div class="group-box">
-                <h2>إعدادات الصفحة</h2>
-                <div class="form-row">
-                    <label>اتجاه الصفحة:</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" name="page-orientation" id="orientation-vertical" value="vertical" checked>
-                            <label for="orientation-vertical">عمودي</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" name="page-orientation" id="orientation-horizontal" value="horizontal">
-                            <label for="orientation-horizontal">أفقي</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- أزرار الطباعة والحفظ -->
-            <div class="btn-group">
-                <button id="print-btn">معاينة الطباعة</button>
-                <button id="save-btn" class="secondary">حفظ الإعدادات</button>
-                <button id="load-btn" class="tertiary">استرجاع الإعدادات</button>
-            </div>
+        <div class="header">
+            محرر النصوص التفاعلي
         </div>
-
-        <!-- قسم المعاينة -->
-        <div class="preview-container">
-            <div class="group-box">
-                <h2>المعاينة</h2>
-                <div class="preview">
-                    <div class="preview-wrapper">
-                        <div class="preview-background"></div>
-                        <div class="preview-content">
-                            <div id="preview-title"></div>
-                            <div id="preview-product"></div>
-                            <div id="preview-price"></div>
+        
+        <div class="main-content">
+            <div class="controls-section">
+                <!-- قسم العرض -->
+                <div class="group-box">
+                    <div class="group-title">العرض</div>
+                    <div class="form-group">
+                        <label for="display-text">النص:</label>
+                        <input type="text" id="display-text" class="form-control" placeholder="أدخل النص المراد عرضه">
+                    </div>
+                    <div class="form-group">
+                        <label for="display-font">نوع الخط:</label>
+                        <select id="display-font" class="form-control">
+                            <option value="Arial, sans-serif">Arial</option>
+                            <option value="'Times New Roman', serif">Times New Roman</option>
+                            <option value="'Courier New', monospace">Courier New</option>
+                            <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                            <option value="'Cairo', sans-serif">Cairo</option>
+                            <option value="'Amiri', serif">Amiri</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="display-size">حجم الخط:</label>
+                        <input type="number" id="display-size" class="form-control" value="16" min="8" max="72">
+                    </div>
+                    <div class="form-group">
+                        <label for="display-color">اللون:</label>
+                        <select id="display-color" class="form-control">
+                            <option value="#000000">أسود</option>
+                            <option value="#ff0000">أحمر</option>
+                            <option value="#00ff00">أخضر</option>
+                            <option value="#0000ff">أزرق</option>
+                            <option value="#ffff00">أصفر</option>
+                            <option value="#ff00ff">بنفسجي</option>
+                            <option value="#00ffff">سماوي</option>
+                            <option value="#808080">رمادي</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>خصائص النص:</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="display-bold">
+                                <label for="display-bold">عريض</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="display-italic">
+                                <label for="display-italic">مائل</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="display-underline">
+                                <label for="display-underline">تحته خط</label>
+                            </div>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label>محاذاة النص:</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="display-right" name="display-align" value="right" checked>
+                                <label for="display-right">يمين</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="display-center" name="display-align" value="center">
+                                <label for="display-center">وسط</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="display-left" name="display-align" value="left">
+                                <label for="display-left">يسار</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم المنتج -->
+                <div class="group-box">
+                    <div class="group-title">المنتج</div>
+                    <div class="form-group">
+                        <label for="product-text">النص:</label>
+                        <input type="text" id="product-text" class="form-control" placeholder="أدخل اسم المنتج">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-font">نوع الخط:</label>
+                        <select id="product-font" class="form-control">
+                            <option value="Arial, sans-serif">Arial</option>
+                            <option value="'Times New Roman', serif">Times New Roman</option>
+                            <option value="'Courier New', monospace">Courier New</option>
+                            <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                            <option value="'Cairo', sans-serif">Cairo</option>
+                            <option value="'Amiri', serif">Amiri</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-size">حجم الخط:</label>
+                        <input type="number" id="product-size" class="form-control" value="18" min="8" max="72">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-color">اللون:</label>
+                        <select id="product-color" class="form-control">
+                            <option value="#000000">أسود</option>
+                            <option value="#ff0000">أحمر</option>
+                            <option value="#00ff00">أخضر</option>
+                            <option value="#0000ff">أزرق</option>
+                            <option value="#ffff00">أصفر</option>
+                            <option value="#ff00ff">بنفسجي</option>
+                            <option value="#00ffff">سماوي</option>
+                            <option value="#808080">رمادي</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>خصائص النص:</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="product-bold">
+                                <label for="product-bold">عريض</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="product-italic">
+                                <label for="product-italic">مائل</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="product-underline">
+                                <label for="product-underline">تحته خط</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>محاذاة النص:</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="product-right" name="product-align" value="right" checked>
+                                <label for="product-right">يمين</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="product-center" name="product-align" value="center">
+                                <label for="product-center">وسط</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="product-left" name="product-align" value="left">
+                                <label for="product-left">يسار</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم السعر -->
+                <div class="group-box">
+                    <div class="group-title">السعر</div>
+                    <div class="form-group">
+                        <label for="price-text">النص:</label>
+                        <input type="text" id="price-text" class="form-control" placeholder="أدخل السعر">
+                    </div>
+                    <div class="form-group">
+                        <label for="price-font">نوع الخط:</label>
+                        <select id="price-font" class="form-control">
+                            <option value="Arial, sans-serif">Arial</option>
+                            <option value="'Times New Roman', serif">Times New Roman</option>
+                            <option value="'Courier New', monospace">Courier New</option>
+                            <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                            <option value="'Cairo', sans-serif">Cairo</option>
+                            <option value="'Amiri', serif">Amiri</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="price-size">حجم الخط:</label>
+                        <input type="number" id="price-size" class="form-control" value="20" min="8" max="72">
+                    </div>
+                    <div class="form-group">
+                        <label for="price-color">اللون:</label>
+                        <select id="price-color" class="form-control">
+                            <option value="#000000">أسود</option>
+                            <option value="#ff0000" selected>أحمر</option>
+                            <option value="#00ff00">أخضر</option>
+                            <option value="#0000ff">أزرق</option>
+                            <option value="#ffff00">أصفر</option>
+                            <option value="#ff00ff">بنفسجي</option>
+                            <option value="#00ffff">سماوي</option>
+                            <option value="#808080">رمادي</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>خصائص النص:</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="price-bold" checked>
+                                <label for="price-bold">عريض</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="price-italic">
+                                <label for="price-italic">مائل</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="price-underline">
+                                <label for="price-underline">تحته خط</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>محاذاة النص:</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="price-right" name="price-align" value="right" checked>
+                                <label for="price-right">يمين</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="price-center" name="price-align" value="center">
+                                <label for="price-center">وسط</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="price-left" name="price-align" value="left">
+                                <label for="price-left">يسار</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم الخلفية -->
+                <div class="group-box">
+                    <div class="group-title">الخلفية</div>
+                    <div class="form-group">
+                        <label for="background-image">صورة الخلفية:</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="background-image" class="file-input" accept="image/*">
+                            <label for="background-image" class="file-input-label">اختر صورة الخلفية</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="background-opacity">شفافية الخلفية:</label>
+                        <div class="range-container">
+                            <input type="range" id="background-opacity" class="range-slider" min="0" max="100" value="80">
+                            <span class="range-value" id="opacity-value">80%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم إعدادات الصفحة -->
+                <div class="group-box">
+                    <div class="group-title">إعدادات الصفحة</div>
+                    <div class="form-group">
+                        <label>اتجاه الصفحة:</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="orientation-portrait" name="orientation" value="portrait" checked>
+                                <label for="orientation-portrait">عمودي</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="orientation-landscape" name="orientation" value="landscape">
+                                <label for="orientation-landscape">أفقي</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="print-btn" onclick="printPage()">طباعة الصفحة</button>
+                </div>
+            </div>
+
+            <!-- قسم المعاينة -->
+            <div class="preview-section">
+                <div class="preview-title">المعاينة</div>
+                <div class="preview-container" id="preview-container">
+                    <div class="preview-page" id="preview-page">
+                        <div class="preview-text" id="display-preview"></div>
+                        <div class="preview-text" id="product-preview"></div>
+                        <div class="preview-text" id="price-preview"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- نافذة معاينة الطباعة -->
-    <div class="print-preview" id="print-preview">
-        <div class="print-preview-content portrait" id="print-preview-content">
-            <div class="preview-wrapper">
-                <div class="preview-background" id="preview-background-print"></div>
-                <div class="preview-content">
-                    <div id="preview-title-print"></div>
-                    <div id="preview-product-print"></div>
-                    <div id="preview-price-print"></div>
-                </div>
-            </div>
-        </div>
-        <div class="print-preview-actions">
-            <button id="print-now-btn" class="print-btn">طباعة</button>
-            <button id="close-preview-btn" class="close-btn">إغلاق</button>
+    <!-- محتوى الطباعة المخفي -->
+    <div class="print-content" style="display: none;">
+        <div class="print-page" id="print-page">
+            <div class="print-text" id="display-print"></div>
+            <div class="print-text" id="product-print"></div>
+            <div class="print-text" id="price-print"></div>
         </div>
     </div>
 
     <script>
-        // الحصول على جميع عناصر التحكم
-        const titleText = document.getElementById('title-text');
-        const titleFont = document.getElementById('title-font');
-        const titleSize = document.getElementById('title-size');
-        const titleColor = document.getElementById('title-color');
-        const titleBold = document.getElementById('title-bold');
-        const titleItalic = document.getElementById('title-italic');
-        const titleUnderline = document.getElementById('title-underline');
-        const titleAlignRadios = document.querySelectorAll('input[name="title-align"]');
+        // متغيرات عامة
+        let backgroundImageUrl = '';
 
-        const productText = document.getElementById('product-text');
-        const productFont = document.getElementById('product-font');
-        const productSize = document.getElementById('product-size');
-        const productColor = document.getElementById('product-color');
-        const productBold = document.getElementById('product-bold');
-        const productItalic = document.getElementById('product-italic');
-        const productUnderline = document.getElementById('product-underline');
-        const productAlignRadios = document.querySelectorAll('input[name="product-align"]');
+        // تحديث قيمة الشفافية
+        document.getElementById('background-opacity').addEventListener('input', function() {
+            document.getElementById('opacity-value').textContent = this.value + '%';
+            updatePreview();
+        });
 
-        const priceText = document.getElementById('price-text');
-        const priceFont = document.getElementById('price-font');
-        const priceSize = document.getElementById('price-size');
-        const priceColor = document.getElementById('price-color');
-        const priceBold = document.getElementById('price-bold');
-        const priceItalic = document.getElementById('price-italic');
-        const priceUnderline = document.getElementById('price-underline');
-        const priceAlignRadios = document.querySelectorAll('input[name="price-align"]');
-
-        const backgroundImage = document.getElementById('background-image');
-        const backgroundOpacity = document.getElementById('background-opacity');
-        const orientationRadios = document.querySelectorAll('input[name="page-orientation"]');
-        
-        const printBtn = document.getElementById('print-btn');
-        const saveBtn = document.getElementById('save-btn');
-        const loadBtn = document.getElementById('load-btn');
-        const messageEl = document.getElementById('message');
-        const autosaveIndicator = document.getElementById('autosave-indicator');
-
-        // عناصر معاينة الطباعة
-        const printPreviewModal = document.getElementById('print-preview');
-        const printPreviewContent = document.getElementById('print-preview-content');
-        const printNowBtn = document.getElementById('print-now-btn');
-        const closePreviewBtn = document.getElementById('close-preview-btn');
-        const previewTitlePrint = document.getElementById('preview-title-print');
-        const previewProductPrint = document.getElementById('preview-product-print');
-        const previewPricePrint = document.getElementById('preview-price-print');
-        const previewBackgroundPrint = document.getElementById('preview-background-print');
-
-        // عناصر المعاينة
-        const previewTitle = document.getElementById('preview-title');
-        const previewProduct = document.getElementById('preview-product');
-        const previewPrice = document.getElementById('preview-price');
-        const previewBackground = document.querySelector('.preview-background');
-        const previewWrapper = document.querySelector('.preview-wrapper');
-        const preview = document.querySelector('.preview');
-
-        // متغيرات للحفظ التلقائي
-        let autoSaveTimer = null;
-        const AUTO_SAVE_DELAY = 2000; // تأخير الحفظ التلقائي بالمللي ثانية (2 ثوان)
-        let lastAutoSaveTime = null;
-
-        // متغير لتخزين البيانات المحملة من الصورة
-        let backgroundImageData = '';
-
-        // دالة تحديث المعاينة
-        function updatePreview() {
-            // تحديث عنوان العرض
-            previewTitle.textContent = titleText.value;
-            previewTitle.style.fontFamily = titleFont.value;
-            previewTitle.style.fontSize = titleSize.value + 'px';
-            previewTitle.style.color = titleColor.value;
-            previewTitle.style.fontWeight = titleBold.checked ? 'bold' : 'normal';
-            previewTitle.style.fontStyle = titleItalic.checked ? 'italic' : 'normal';
-            previewTitle.style.textDecoration = titleUnderline.checked ? 'underline' : 'none';
-            
-            let titleAlign = 'right';
-            for (const radio of titleAlignRadios) {
-                if (radio.checked) {
-                    titleAlign = radio.value;
-                    break;
-                }
-            }
-            previewTitle.style.textAlign = titleAlign;
-
-            // تحديث المنتج
-            previewProduct.textContent = productText.value;
-            previewProduct.style.fontFamily = productFont.value;
-            previewProduct.style.fontSize = productSize.value + 'px';
-            previewProduct.style.color = productColor.value;
-            previewProduct.style.fontWeight = productBold.checked ? 'bold' : 'normal';
-            previewProduct.style.fontStyle = productItalic.checked ? 'italic' : 'normal';
-            previewProduct.style.textDecoration = productUnderline.checked ? 'underline' : 'none';
-            
-            let productAlign = 'right';
-            for (const radio of productAlignRadios) {
-                if (radio.checked) {
-                    productAlign = radio.value;
-                    break;
-                }
-            }
-            previewProduct.style.textAlign = productAlign;
-
-            // تحديث السعر
-            previewPrice.textContent = priceText.value;
-            previewPrice.style.fontFamily = priceFont.value;
-            previewPrice.style.fontSize = priceSize.value + 'px';
-            previewPrice.style.color = priceColor.value;
-            previewPrice.style.fontWeight = priceBold.checked ? 'bold' : 'normal';
-            previewPrice.style.fontStyle = priceItalic.checked ? 'italic' : 'normal';
-            previewPrice.style.textDecoration = priceUnderline.checked ? 'underline' : 'none';
-            
-            let priceAlign = 'right';
-            for (const radio of priceAlignRadios) {
-                if (radio.checked) {
-                    priceAlign = radio.value;
-                    break;
-                }
-            }
-            previewPrice.style.textAlign = priceAlign;
-
-            // تحديث الشفافية
-            previewBackground.style.opacity = backgroundOpacity.value;
-
-            // تحديث اتجاه الصفحة
-            let orientation = 'vertical';
-            for (const radio of orientationRadios) {
-                if (radio.checked) {
-                    orientation = radio.value;
-                    break;
-                }
-            }
-
-            if (orientation === 'horizontal') {
-                preview.style.display = 'flex';
-                preview.style.flexDirection = 'row';
-                preview.style.alignItems = 'center';
-                preview.style.justifyContent = 'space-around';
-                preview.style.minHeight = '200px';
-            } else {
-                preview.style.display = 'block';
-                preview.style.minHeight = '400px';
-            }
-            
-            // تحديث نسخة معاينة الطباعة أيضًا إذا كانت مفتوحة
-            updatePrintPreview();
-
-            // جدولة الحفظ التلقائي بعد التغيير
-            scheduleAutoSave();
-        }
-
-        // دالة لتحديث معاينة الطباعة
-        function updatePrintPreview() {
-            // نسخ جميع التنسيقات من المعاينة الرئيسية إلى معاينة الطباعة
-            previewTitlePrint.textContent = titleText.value;
-            previewTitlePrint.style.fontFamily = titleFont.value;
-            previewTitlePrint.style.fontSize = titleSize.value + 'px';
-            previewTitlePrint.style.color = titleColor.value;
-            previewTitlePrint.style.fontWeight = titleBold.checked ? 'bold' : 'normal';
-            previewTitlePrint.style.fontStyle = titleItalic.checked ? 'italic' : 'normal';
-            previewTitlePrint.style.textDecoration = titleUnderline.checked ? 'underline' : 'none';
-            previewTitlePrint.style.textAlign = getSelectedRadioValue(titleAlignRadios);
-
-            previewProductPrint.textContent = productText.value;
-            previewProductPrint.style.fontFamily = productFont.value;
-            previewProductPrint.style.fontSize = productSize.value + 'px';
-            previewProductPrint.style.color = productColor.value;
-            previewProductPrint.style.fontWeight = productBold.checked ? 'bold' : 'normal';
-            previewProductPrint.style.fontStyle = productItalic.checked ? 'italic' : 'normal';
-            previewProductPrint.style.textDecoration = productUnderline.checked ? 'underline' : 'none';
-            previewProductPrint.style.textAlign = getSelectedRadioValue(productAlignRadios);
-
-            previewPricePrint.textContent = priceText.value;
-            previewPricePrint.style.fontFamily = priceFont.value;
-            previewPricePrint.style.fontSize = priceSize.value + 'px';
-            previewPricePrint.style.color = priceColor.value;
-            previewPricePrint.style.fontWeight = priceBold.checked ? 'bold' : 'normal';
-            previewPricePrint.style.fontStyle = priceItalic.checked ? 'italic' : 'normal';
-            previewPricePrint.style.textDecoration = priceUnderline.checked ? 'underline' : 'none';
-            previewPricePrint.style.textAlign = getSelectedRadioValue(priceAlignRadios);
-
-            // نسخ الخلفية
-            if (backgroundImageData) {
-                previewBackgroundPrint.style.backgroundImage = `url(${backgroundImageData})`;
-            } else {
-                previewBackgroundPrint.style.backgroundImage = 'none';
-            }
-            previewBackgroundPrint.style.opacity = backgroundOpacity.value;
-
-            // تحديث اتجاه الصفحة
-            const orientation = getSelectedRadioValue(orientationRadios);
-            if (orientation === 'horizontal') {
-                printPreviewContent.className = 'print-preview-content landscape';
-            } else {
-                printPreviewContent.className = 'print-preview-content portrait';
-            }
-        }
-
-        // دالة فتح نافذة معاينة الطباعة
-        function showPrintPreview() {
-            updatePrintPreview();
-            printPreviewModal.classList.add('active');
-        }
-
-        // دالة إغلاق نافذة معاينة الطباعة
-        function closePrintPreview() {
-            printPreviewModal.classList.remove('active');
-        }
-
-        // دالة الطباعة الفعلية
-        function printDocument() {
-            // إنشاء عنصر iframe مؤقت للطباعة
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            document.body.appendChild(iframe);
-            
-            // الحصول على محتوى الصفحة
-            const orientation = getSelectedRadioValue(orientationRadios);
-            let pageClass = orientation === 'horizontal' ? 'page-horizontal' : 'page-vertical';
-            
-            // بناء HTML محتوى الطباعة
-            const printContent = `
-                <!DOCTYPE html>
-                <html dir="rtl" lang="ar">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>طباعة</title>
-                    <style>
-                        @page {
-                            size: A4 ${orientation === 'horizontal' ? 'landscape' : 'portrait'};
-                            margin: 0;
-                        }
-                        
-                        body {
-                            margin: 0;
-                            padding: 20mm;
-                            width: ${orientation === 'horizontal' ? '297mm' : '210mm'};
-                            height: ${orientation === 'horizontal' ? '210mm' : '297mm'};
-                            overflow: hidden;
-                            position: relative;
-                        }
-
-                        * {
-                            -webkit-print-color-adjust: exact !important;
-                            color-adjust: exact !important;
-                            print-color-adjust: exact !important;
-                            box-sizing: border-box;
-                        }
-                        
-                        .preview-wrapper {
-                            position: relative;
-                            width: 100%;
-                            height: 100%;
-                        }
-                        
-                        .preview-background {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            right: 0;
-                            bottom: 0;
-                            background-image: ${previewBackgroundPrint.style.backgroundImage};
-                            background-size: cover;
-                            background-position: center;
-                            opacity: ${backgroundOpacity.value};
-                            z-index: 0;
-                        }
-                        
-                        .preview-content {
-                            position: relative;
-                            z-index: 1;
-                        }
-                        
-                        #preview-title-print {
-                            font-family: ${titleFont.value};
-                            font-size: ${titleSize.value}px;
-                            color: ${titleColor.value};
-                            font-weight: ${titleBold.checked ? 'bold' : 'normal'};
-                            font-style: ${titleItalic.checked ? 'italic' : 'normal'};
-                            text-decoration: ${titleUnderline.checked ? 'underline' : 'none'};
-                            text-align: ${getSelectedRadioValue(titleAlignRadios)};
-                            margin-bottom: 20px;
-                        }
-                        
-                        #preview-product-print {
-                            font-family: ${productFont.value};
-                            font-size: ${productSize.value}px;
-                            color: ${productColor.value};
-                            font-weight: ${productBold.checked ? 'bold' : 'normal'};
-                            font-style: ${productItalic.checked ? 'italic' : 'normal'};
-                            text-decoration: ${productUnderline.checked ? 'underline' : 'none'};
-                            text-align: ${getSelectedRadioValue(productAlignRadios)};
-                            margin-bottom: 20px;
-                        }
-                        
-                        #preview-price-print {
-                            font-family: ${priceFont.value};
-                            font-size: ${priceSize.value}px;
-                            color: ${priceColor.value};
-                            font-weight: ${priceBold.checked ? 'bold' : 'normal'};
-                            font-style: ${priceItalic.checked ? 'italic' : 'normal'};
-                            text-decoration: ${priceUnderline.checked ? 'underline' : 'none'};
-                            text-align: ${getSelectedRadioValue(priceAlignRadios)};
-                        }
-                        
-                        ${orientation === 'horizontal' ? `
-                        .preview-content {
-                            display: flex;
-                            flex-direction: row;
-                            justify-content: space-around;
-                            align-items: center;
-                            height: 100%;
-                        }
-                        
-                        #preview-title-print, #preview-product-print, #preview-price-print {
-                            margin: 0 20px;
-                            flex: 1;
-                        }` : ''}
-                    </style>
-                </head>
-                <body class="${pageClass}">
-                    <div class="preview-wrapper">
-                        <div class="preview-background"></div>
-                        <div class="preview-content">
-                            <div id="preview-title-print">${titleText.value}</div>
-                            <div id="preview-product-print">${productText.value}</div>
-                            <div id="preview-price-print">${priceText.value}</div>
-                        </div>
-                    </div>
-                </body>
-                </html>
-            `;
-            
-            // إضافة المحتوى إلى الإطار
-            const iframeDoc = iframe.contentWindow.document;
-            iframeDoc.open();
-            iframeDoc.write(printContent);
-            iframeDoc.close();
-            
-            // انتظار تحميل الخلفية إذا وجدت
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-                
-                // إزالة الإطار بعد الطباعة
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                }, 100);
-            }, 500); // انتظار لتحميل الصور
-        }
-
-        // دالة جدولة الحفظ التلقائي
-        function scheduleAutoSave() {
-            // إلغاء أي مؤقت سابق للحفظ التلقائي
-            if (autoSaveTimer) {
-                clearTimeout(autoSaveTimer);
-            }
-            
-            // عرض مؤشر "جاري الحفظ..."
-            autosaveIndicator.textContent = "جاري الحفظ...";
-            autosaveIndicator.classList.add("saving");
-            
-            // جدولة الحفظ التلقائي بعد فترة زمنية محددة
-            autoSaveTimer = setTimeout(() => {
-                saveSettings(true);
-                autoSaveTimer = null;
-            }, AUTO_SAVE_DELAY);
-        }
-
-        // دالة لتنسيق التاريخ والوقت
-        function formatDateTime(date) {
-            const options = { 
-                year: 'numeric', 
-                month: 'numeric', 
-                day: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit' 
-            };
-            return date.toLocaleString('ar-SA', options);
-        }
-
-        // أحداث للاستماع للتغييرات
-        titleText.addEventListener('input', updatePreview);
-        titleFont.addEventListener('change', updatePreview);
-        titleSize.addEventListener('input', updatePreview);
-        titleColor.addEventListener('change', updatePreview);
-        titleBold.addEventListener('change', updatePreview);
-        titleItalic.addEventListener('change', updatePreview);
-        titleUnderline.addEventListener('change', updatePreview);
-        titleAlignRadios.forEach(radio => radio.addEventListener('change', updatePreview));
-
-        productText.addEventListener('input', updatePreview);
-        productFont.addEventListener('change', updatePreview);
-        productSize.addEventListener('input', updatePreview);
-        productColor.addEventListener('change', updatePreview);
-        productBold.addEventListener('change', updatePreview);
-        productItalic.addEventListener('change', updatePreview);
-        productUnderline.addEventListener('change', updatePreview);
-        productAlignRadios.forEach(radio => radio.addEventListener('change', updatePreview));
-
-        priceText.addEventListener('input', updatePreview);
-        priceFont.addEventListener('change', updatePreview);
-        priceSize.addEventListener('input', updatePreview);
-        priceColor.addEventListener('change', updatePreview);
-        priceBold.addEventListener('change', updatePreview);
-        priceItalic.addEventListener('change', updatePreview);
-        priceUnderline.addEventListener('change', updatePreview);
-        priceAlignRadios.forEach(radio => radio.addEventListener('change', updatePreview));
-
-        backgroundOpacity.addEventListener('input', updatePreview);
-        orientationRadios.forEach(radio => radio.addEventListener('change', updatePreview));
-
-        // استيراد صورة الخلفية
-        backgroundImage.addEventListener('change', function(e) {
+        // معالج تحميل الصورة
+        document.getElementById('background-image').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                    backgroundImageData = event.target.result;
-                    previewBackground.style.backgroundImage = `url(${backgroundImageData})`;
+                reader.onload = function(e) {
+                    backgroundImageUrl = e.target.result;
                     updatePreview();
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // أحداث معاينة الطباعة والطباعة
-        printBtn.addEventListener('click', showPrintPreview);
-        closePreviewBtn.addEventListener('click', closePrintPreview);
-        printNowBtn.addEventListener('click', function() {
-            printDocument();
-            closePrintPreview();
-        });
+        // تطبيق التنسيق على النص
+        function applyTextStyle(section, element) {
+            const text = document.getElementById(section + '-text').value;
+            const font = document.getElementById(section + '-font').value;
+            const size = document.getElementById(section + '-size').value;
+            const color = document.getElementById(section + '-color').value;
+            const bold = document.getElementById(section + '-bold').checked;
+            const italic = document.getElementById(section + '-italic').checked;
+            const underline = document.getElementById(section + '-underline').checked;
+            const align = document.querySelector('input[name="' + section + '-align"]:checked').value;
 
-        // عرض رسالة 
-        function showMessage(message) {
-            messageEl.textContent = message;
-            messageEl.style.display = 'block';
-            setTimeout(() => {
-                messageEl.style.display = 'none';
-            }, 3000);
-        }
+            element.textContent = text;
+            element.style.fontFamily = font;
+            element.style.fontSize = size + 'px';
+            element.style.color = color;
+            element.style.fontWeight = bold ? 'bold' : 'normal';
+            element.style.fontStyle = italic ? 'italic' : 'normal';
+            element.style.textDecoration = underline ? 'underline' : 'none';
+            element.style.textAlign = align;
 
-        // دالة لحفظ الإعدادات
-        function saveSettings(isAutoSave = false) {
-            const settings = {
-                title: {
-                    text: titleText.value,
-                    font: titleFont.value,
-                    size: titleSize.value,
-                    color: titleColor.value,
-                    bold: titleBold.checked,
-                    italic: titleItalic.checked,
-                    underline: titleUnderline.checked,
-                    align: getSelectedRadioValue(titleAlignRadios)
-                },
-                product: {
-                    text: productText.value,
-                    font: productFont.value,
-                    size: productSize.value,
-                    color: productColor.value,
-                    bold: productBold.checked,
-                    italic: productItalic.checked,
-                    underline: productUnderline.checked,
-                    align: getSelectedRadioValue(productAlignRadios)
-                },
-                price: {
-                    text: priceText.value,
-                    font: priceFont.value,
-                    size: priceSize.value,
-                    color: priceColor.value,
-                    bold: priceBold.checked,
-                    italic: priceItalic.checked,
-                    underline: priceUnderline.checked,
-                    align: getSelectedRadioValue(priceAlignRadios)
-                },
-                background: {
-                    imageData: backgroundImageData,
-                    opacity: backgroundOpacity.value
-                },
-                orientation: getSelectedRadioValue(orientationRadios),
-                lastSaved: new Date().toISOString()
-            };
-            
-            localStorage.setItem('pageSettings', JSON.stringify(settings));
-            
-            // تحديث وقت الحفظ التلقائي وعرضه
-            lastAutoSaveTime = new Date();
-            if (isAutoSave) {
-                autosaveIndicator.textContent = `آخر حفظ تلقائي: ${formatDateTime(lastAutoSaveTime)}`;
-                autosaveIndicator.classList.remove("saving");
+            if (!text) {
+                element.style.display = 'none';
             } else {
-                showMessage('تم حفظ الإعدادات بنجاح');
-                autosaveIndicator.textContent = `آخر حفظ تلقائي: ${formatDateTime(lastAutoSaveTime)}`;
-                autosaveIndicator.classList.remove("saving");
+                element.style.display = 'block';
             }
         }
 
-        // دالة لاسترجاع الإعدادات
-        function loadSettings() {
-            const settingsJson = localStorage.getItem('pageSettings');
-            if (!settingsJson) {
-                showMessage('لا توجد إعدادات محفوظة');
-                return;
+        // تحديث المعاينة
+        function updatePreview() {
+            // تطبيق الخلفية
+            const previewPage = document.getElementById('preview-page');
+            const opacity = document.getElementById('background-opacity').value / 100;
+            
+            if (backgroundImageUrl) {
+                previewPage.style.backgroundImage = `url(${backgroundImageUrl})`;
+                previewPage.style.backgroundColor = `rgba(255, 255, 255, ${1 - opacity})`;
+                previewPage.style.backgroundBlendMode = 'overlay';
+            } else {
+                previewPage.style.backgroundImage = 'none';
+                previewPage.style.backgroundColor = 'white';
             }
-            
-            const settings = JSON.parse(settingsJson);
-            
-            // استرجاع إعدادات العنوان
-            titleText.value = settings.title.text;
-            titleFont.value = settings.title.font;
-            titleSize.value = settings.title.size;
-            titleColor.value = settings.title.color;
-            titleBold.checked = settings.title.bold;
-            titleItalic.checked = settings.title.italic;
-            titleUnderline.checked = settings.title.underline;
-            setSelectedRadioValue(titleAlignRadios, settings.title.align);
-            
-            // استرجاع إعدادات المنتج
-            productText.value = settings.product.text;
-            productFont.value = settings.product.font;
-            productSize.value = settings.product.size;
-            productColor.value = settings.product.color;
-            productBold.checked = settings.product.bold;
-            productItalic.checked = settings.product.italic;
-            productUnderline.checked = settings.product.underline;
-            setSelectedRadioValue(productAlignRadios, settings.product.align);
-            
-            // استرجاع إعدادات السعر
-            priceText.value = settings.price.text;
-            priceFont.value = settings.price.font;
-            priceSize.value = settings.price.size;
-            priceColor.value = settings.price.color;
-            priceBold.checked = settings.price.bold;
-            priceItalic.checked = settings.price.italic;
-            priceUnderline.checked = settings.price.underline;
-            setSelectedRadioValue(priceAlignRadios, settings.price.align);
-            
-            // استرجاع إعدادات الخلفية
-            backgroundImageData = settings.background.imageData;
-            if (backgroundImageData) {
-                previewBackground.style.backgroundImage = `url(${backgroundImageData})`;
+
+            // تطبيق التنسيق على كل قسم
+            applyTextStyle('display', document.getElementById('display-preview'));
+            applyTextStyle('product', document.getElementById('product-preview'));
+            applyTextStyle('price', document.getElementById('price-preview'));
+
+            // تحديث اتجاه الصفحة
+            const orientation = document.querySelector('input[name="orientation"]:checked').value;
+            const container = document.getElementById('preview-container');
+            if (orientation === 'landscape') {
+                container.style.aspectRatio = '4/3';
+            } else {
+                container.style.aspectRatio = '3/4';
             }
-            backgroundOpacity.value = settings.background.opacity;
-            
-            // استرجاع اتجاه الصفحة
-            setSelectedRadioValue(orientationRadios, settings.orientation);
-            
-            // تحديث المعاينة
-            updatePreview();
-            
-            // تحديث مؤشر آخر حفظ
-            if (settings.lastSaved) {
-                lastAutoSaveTime = new Date(settings.lastSaved);
-                autosaveIndicator.textContent = `آخر حفظ تلقائي: ${formatDateTime(lastAutoSaveTime)}`;
-            }
-            
-            showMessage('تم استرجاع الإعدادات بنجاح');
         }
-        
-        // مساعد للحصول على قيمة الراديو المحدد
-        function getSelectedRadioValue(radios) {
-            for (const radio of radios) {
-                if (radio.checked) {
-                    return radio.value;
+
+        // تحديث نسخة الطباعة
+        function updatePrintVersion() {
+            const printPage = document.getElementById('print-page');
+            const opacity = document.getElementById('background-opacity').value / 100;
+            
+            if (backgroundImageUrl) {
+                printPage.style.backgroundImage = `url(${backgroundImageUrl})`;
+                printPage.style.backgroundColor = `rgba(255, 255, 255, ${1 - opacity})`;
+                printPage.style.backgroundBlendMode = 'overlay';
+            } else {
+                printPage.style.backgroundImage = 'none';
+                printPage.style.backgroundColor = 'white';
+            }
+
+            applyTextStyle('display', document.getElementById('display-print'));
+            applyTextStyle('product', document.getElementById('product-print'));
+            applyTextStyle('price', document.getElementById('price-print'));
+
+            // إعداد اتجاه الطباعة
+            const orientation = document.querySelector('input[name="orientation"]:checked').value;
+            const style = document.createElement('style');
+            style.textContent = `
+                @page {
+                    size: ${orientation === 'landscape' ? 'landscape' : 'portrait'};
+                    margin: 0;
                 }
-            }
-            return null;
+            `;
+            document.head.appendChild(style);
         }
-        
-        // مساعد لتعيين قيمة الراديو المحدد
-        function setSelectedRadioValue(radios, value) {
-            for (const radio of radios) {
-                radio.checked = (radio.value === value);
-            }
-        }
-        
-        // إضافة أحداث للأزرار
-        saveBtn.addEventListener('click', () => saveSettings(false));
-        loadBtn.addEventListener('click', loadSettings);
 
-        // تحميل الإعدادات المحفوظة عند تحميل الصفحة
-        window.addEventListener('load', function() {
-            // محاولة تحميل الإعدادات المحفوظة
-            const settingsJson = localStorage.getItem('pageSettings');
-            if (settingsJson) {
-                loadSettings();
-            } else {
-                // إذا لم تكن هناك إعدادات محفوظة، استخدام الإعدادات الافتراضية والحفظ
-                updatePreview();
-                saveSettings(true);
-            }
+        // دالة الطباعة
+        function printPage() {
+            updatePrintVersion();
+            window.print();
+        }
+
+        // إضافة مستمعي الأحداث لجميع عناصر التحكم
+        function addEventListeners() {
+            const sections = ['display', 'product', 'price'];
+            
+            sections.forEach(section => {
+                document.getElementById(section + '-text').addEventListener('input', updatePreview);
+                document.getElementById(section + '-font').addEventListener('change', updatePreview);
+                document.getElementById(section + '-size').addEventListener('input', updatePreview);
+                document.getElementById(section + '-color').addEventListener('change', updatePreview);
+                document.getElementById(section + '-bold').addEventListener('change', updatePreview);
+                document.getElementById(section + '-italic').addEventListener('change', updatePreview);
+                document.getElementById(section + '-underline').addEventListener('change', updatePreview);
+                
+                document.querySelectorAll('input[name="' + section + '-align"]').forEach(radio => {
+                    radio.addEventListener('change', updatePreview);
+                });
+            });
+
+            document.querySelectorAll('input[name="orientation"]').forEach(radio => {
+                radio.addEventListener('change', updatePreview);
+            });
+        }
+
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            addEventListeners();
+            updatePreview();
         });
-        
-        // تنفيذ التحديث الأولي
-        updatePreview();
     </script>
-</body>
+</head>
 </html>
