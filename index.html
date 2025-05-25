@@ -138,12 +138,7 @@
             opacity: 0.9;
         }
         
-        /* تنسيق الطباعة لورقة A4 - سيتم تحديثه ديناميكيًا بواسطة JavaScript */
-        @page {
-            margin: 0;
-            /* سيتم ضبط الاتجاه من خلال JavaScript */
-        }
-        
+        /* تنسيقات الطباعة الأساسية (لكلا الاتجاهين) */
         @media print {
             html, body {
                 margin: 0;
@@ -151,10 +146,14 @@
             }
             
             /* إجبار المتصفح على طباعة الخلفيات والألوان */
-            * {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                color-adjust: exact;
+            html {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            body {
+                background-color: white;
             }
             
             .controls, .autosave-indicator, .message {
@@ -162,51 +161,96 @@
             }
             
             .container {
-                display: block;
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                padding: 0;
+                display: block !important;
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
             
             .preview-container {
-                width: 100%;
-                height: 100%;
-                position: static;
+                width: 100% !important;
+                height: 100% !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
             }
             
             .preview {
-                border: none;
-                box-shadow: none;
-                width: 100%;
-                height: 100%;
-                padding: 20mm;
-                margin: 0;
-                min-height: auto;
+                border: none !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                height: 100% !important;
+                padding: 10mm !important;
+                margin: 0 !important;
+                min-height: auto !important;
             }
             
             .group-box {
-                border: none;
-                box-shadow: none;
-                margin: 0;
-                padding: 0;
+                border: none !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
             
             .group-box h2 {
-                display: none;
+                display: none !important;
             }
 
             .preview-background {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
                 background-size: cover !important;
                 background-position: center !important;
-                /* التأكد من طباعة الخلفية */
                 display: block !important;
                 visibility: visible !important;
-                opacity: inherit !important;
+                z-index: 0 !important;
+            }
+            
+            .preview-content {
+                position: relative !important;
+                z-index: 1 !important;
             }
         }
-
-        /* التوجيه الأفقي والعمودي */
+        
+        /* تنسيق الطباعة للورقة العمودية */
+        .page-vertical {
+            page: portrait;
+        }
+        
+        @page portrait {
+            size: A4 portrait;
+        }
+        
+        @media print and (orientation: portrait) {
+            .print-content {
+                width: 210mm;
+                height: 297mm;
+            }
+        }
+        
+        /* تنسيق الطباعة للورقة الأفقية */
+        .page-horizontal {
+            page: landscape;
+        }
+        
+        @page landscape {
+            size: A4 landscape;
+        }
+        
+        @media print and (orientation: landscape) {
+            .print-content {
+                width: 297mm;
+                height: 210mm;
+            }
+        }
+        
+        /* التوجيه الأفقي والعمودي للمعاينة */
         .horizontal-layout {
             display: flex;
             flex-direction: row;
@@ -238,7 +282,6 @@
             background-size: cover;
             background-position: center;
             z-index: 0;
-            opacity: 1;
         }
 
         .preview-content {
@@ -286,6 +329,66 @@
 
         .autosave-indicator.saving {
             color: #ffeb3b;
+        }
+        
+        /* معاينة الطباعة */
+        .print-preview {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            overflow: auto;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .print-preview.active {
+            display: flex;
+        }
+        
+        .print-preview-content {
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            margin: 20px;
+        }
+        
+        .print-preview-content.portrait {
+            width: 210mm;
+            height: 297mm;
+            max-height: 80vh;
+            max-width: 80vw;
+            aspect-ratio: 210/297;
+        }
+        
+        .print-preview-content.landscape {
+            width: 297mm;
+            height: 210mm;
+            max-height: 80vh;
+            max-width: 80vw;
+            aspect-ratio: 297/210;
+        }
+        
+        .print-preview-actions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .print-preview .close-btn {
+            background-color: #f44336;
+        }
+        
+        .print-preview .print-btn {
+            background-color: #2196F3;
         }
     </style>
 </head>
@@ -528,7 +631,7 @@
 
             <!-- أزرار الطباعة والحفظ -->
             <div class="btn-group">
-                <button id="print-btn">طباعة ورقة A4</button>
+                <button id="print-btn">معاينة الطباعة</button>
                 <button id="save-btn" class="secondary">حفظ الإعدادات</button>
                 <button id="load-btn" class="tertiary">استرجاع الإعدادات</button>
             </div>
@@ -549,6 +652,24 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- نافذة معاينة الطباعة -->
+    <div class="print-preview" id="print-preview">
+        <div class="print-preview-content portrait" id="print-preview-content">
+            <div class="preview-wrapper">
+                <div class="preview-background" id="preview-background-print"></div>
+                <div class="preview-content">
+                    <div id="preview-title-print"></div>
+                    <div id="preview-product-print"></div>
+                    <div id="preview-price-print"></div>
+                </div>
+            </div>
+        </div>
+        <div class="print-preview-actions">
+            <button id="print-now-btn" class="print-btn">طباعة</button>
+            <button id="close-preview-btn" class="close-btn">إغلاق</button>
         </div>
     </div>
 
@@ -591,6 +712,16 @@
         const messageEl = document.getElementById('message');
         const autosaveIndicator = document.getElementById('autosave-indicator');
 
+        // عناصر معاينة الطباعة
+        const printPreviewModal = document.getElementById('print-preview');
+        const printPreviewContent = document.getElementById('print-preview-content');
+        const printNowBtn = document.getElementById('print-now-btn');
+        const closePreviewBtn = document.getElementById('close-preview-btn');
+        const previewTitlePrint = document.getElementById('preview-title-print');
+        const previewProductPrint = document.getElementById('preview-product-print');
+        const previewPricePrint = document.getElementById('preview-price-print');
+        const previewBackgroundPrint = document.getElementById('preview-background-print');
+
         // عناصر المعاينة
         const previewTitle = document.getElementById('preview-title');
         const previewProduct = document.getElementById('preview-product');
@@ -606,44 +737,6 @@
 
         // متغير لتخزين البيانات المحملة من الصورة
         let backgroundImageData = '';
-
-        // إنشاء ورقة أنماط ديناميكية للتحكم باتجاه الطباعة
-        function createOrUpdatePrintOrientation() {
-            // إزالة أي ورقة أنماط سابقة للطباعة (إذا وجدت)
-            const existingStyle = document.getElementById('print-orientation-style');
-            if (existingStyle) {
-                existingStyle.remove();
-            }
-            
-            // تحديد الاتجاه الحالي
-            let orientation = 'portrait';
-            for (const radio of orientationRadios) {
-                if (radio.checked && radio.value === 'horizontal') {
-                    orientation = 'landscape';
-                    break;
-                }
-            }
-            
-            // إنشاء عنصر style جديد
-            const style = document.createElement('style');
-            style.id = 'print-orientation-style';
-            
-            // تعيين القواعد المناسبة
-            const rules = `
-                @page {
-                    size: A4 ${orientation};
-                }
-                @media print {
-                    html, body {
-                        width: ${orientation === 'portrait' ? '210mm' : '297mm'};
-                        height: ${orientation === 'portrait' ? '297mm' : '210mm'};
-                    }
-                }
-            `;
-            
-            style.textContent = rules;
-            document.head.appendChild(style);
-        }
 
         // دالة تحديث المعاينة
         function updatePreview() {
@@ -724,11 +817,211 @@
                 preview.style.minHeight = '400px';
             }
             
-            // تحديث تنسيق الطباعة حسب اختيار الاتجاه
-            createOrUpdatePrintOrientation();
+            // تحديث نسخة معاينة الطباعة أيضًا إذا كانت مفتوحة
+            updatePrintPreview();
 
             // جدولة الحفظ التلقائي بعد التغيير
             scheduleAutoSave();
+        }
+
+        // دالة لتحديث معاينة الطباعة
+        function updatePrintPreview() {
+            // نسخ جميع التنسيقات من المعاينة الرئيسية إلى معاينة الطباعة
+            previewTitlePrint.textContent = titleText.value;
+            previewTitlePrint.style.fontFamily = titleFont.value;
+            previewTitlePrint.style.fontSize = titleSize.value + 'px';
+            previewTitlePrint.style.color = titleColor.value;
+            previewTitlePrint.style.fontWeight = titleBold.checked ? 'bold' : 'normal';
+            previewTitlePrint.style.fontStyle = titleItalic.checked ? 'italic' : 'normal';
+            previewTitlePrint.style.textDecoration = titleUnderline.checked ? 'underline' : 'none';
+            previewTitlePrint.style.textAlign = getSelectedRadioValue(titleAlignRadios);
+
+            previewProductPrint.textContent = productText.value;
+            previewProductPrint.style.fontFamily = productFont.value;
+            previewProductPrint.style.fontSize = productSize.value + 'px';
+            previewProductPrint.style.color = productColor.value;
+            previewProductPrint.style.fontWeight = productBold.checked ? 'bold' : 'normal';
+            previewProductPrint.style.fontStyle = productItalic.checked ? 'italic' : 'normal';
+            previewProductPrint.style.textDecoration = productUnderline.checked ? 'underline' : 'none';
+            previewProductPrint.style.textAlign = getSelectedRadioValue(productAlignRadios);
+
+            previewPricePrint.textContent = priceText.value;
+            previewPricePrint.style.fontFamily = priceFont.value;
+            previewPricePrint.style.fontSize = priceSize.value + 'px';
+            previewPricePrint.style.color = priceColor.value;
+            previewPricePrint.style.fontWeight = priceBold.checked ? 'bold' : 'normal';
+            previewPricePrint.style.fontStyle = priceItalic.checked ? 'italic' : 'normal';
+            previewPricePrint.style.textDecoration = priceUnderline.checked ? 'underline' : 'none';
+            previewPricePrint.style.textAlign = getSelectedRadioValue(priceAlignRadios);
+
+            // نسخ الخلفية
+            if (backgroundImageData) {
+                previewBackgroundPrint.style.backgroundImage = `url(${backgroundImageData})`;
+            } else {
+                previewBackgroundPrint.style.backgroundImage = 'none';
+            }
+            previewBackgroundPrint.style.opacity = backgroundOpacity.value;
+
+            // تحديث اتجاه الصفحة
+            const orientation = getSelectedRadioValue(orientationRadios);
+            if (orientation === 'horizontal') {
+                printPreviewContent.className = 'print-preview-content landscape';
+            } else {
+                printPreviewContent.className = 'print-preview-content portrait';
+            }
+        }
+
+        // دالة فتح نافذة معاينة الطباعة
+        function showPrintPreview() {
+            updatePrintPreview();
+            printPreviewModal.classList.add('active');
+        }
+
+        // دالة إغلاق نافذة معاينة الطباعة
+        function closePrintPreview() {
+            printPreviewModal.classList.remove('active');
+        }
+
+        // دالة الطباعة الفعلية
+        function printDocument() {
+            // إنشاء عنصر iframe مؤقت للطباعة
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            
+            // الحصول على محتوى الصفحة
+            const orientation = getSelectedRadioValue(orientationRadios);
+            let pageClass = orientation === 'horizontal' ? 'page-horizontal' : 'page-vertical';
+            
+            // بناء HTML محتوى الطباعة
+            const printContent = `
+                <!DOCTYPE html>
+                <html dir="rtl" lang="ar">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>طباعة</title>
+                    <style>
+                        @page {
+                            size: A4 ${orientation === 'horizontal' ? 'landscape' : 'portrait'};
+                            margin: 0;
+                        }
+                        
+                        body {
+                            margin: 0;
+                            padding: 20mm;
+                            width: ${orientation === 'horizontal' ? '297mm' : '210mm'};
+                            height: ${orientation === 'horizontal' ? '210mm' : '297mm'};
+                            overflow: hidden;
+                            position: relative;
+                        }
+
+                        * {
+                            -webkit-print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                            box-sizing: border-box;
+                        }
+                        
+                        .preview-wrapper {
+                            position: relative;
+                            width: 100%;
+                            height: 100%;
+                        }
+                        
+                        .preview-background {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            background-image: ${previewBackgroundPrint.style.backgroundImage};
+                            background-size: cover;
+                            background-position: center;
+                            opacity: ${backgroundOpacity.value};
+                            z-index: 0;
+                        }
+                        
+                        .preview-content {
+                            position: relative;
+                            z-index: 1;
+                        }
+                        
+                        #preview-title-print {
+                            font-family: ${titleFont.value};
+                            font-size: ${titleSize.value}px;
+                            color: ${titleColor.value};
+                            font-weight: ${titleBold.checked ? 'bold' : 'normal'};
+                            font-style: ${titleItalic.checked ? 'italic' : 'normal'};
+                            text-decoration: ${titleUnderline.checked ? 'underline' : 'none'};
+                            text-align: ${getSelectedRadioValue(titleAlignRadios)};
+                            margin-bottom: 20px;
+                        }
+                        
+                        #preview-product-print {
+                            font-family: ${productFont.value};
+                            font-size: ${productSize.value}px;
+                            color: ${productColor.value};
+                            font-weight: ${productBold.checked ? 'bold' : 'normal'};
+                            font-style: ${productItalic.checked ? 'italic' : 'normal'};
+                            text-decoration: ${productUnderline.checked ? 'underline' : 'none'};
+                            text-align: ${getSelectedRadioValue(productAlignRadios)};
+                            margin-bottom: 20px;
+                        }
+                        
+                        #preview-price-print {
+                            font-family: ${priceFont.value};
+                            font-size: ${priceSize.value}px;
+                            color: ${priceColor.value};
+                            font-weight: ${priceBold.checked ? 'bold' : 'normal'};
+                            font-style: ${priceItalic.checked ? 'italic' : 'normal'};
+                            text-decoration: ${priceUnderline.checked ? 'underline' : 'none'};
+                            text-align: ${getSelectedRadioValue(priceAlignRadios)};
+                        }
+                        
+                        ${orientation === 'horizontal' ? `
+                        .preview-content {
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: space-around;
+                            align-items: center;
+                            height: 100%;
+                        }
+                        
+                        #preview-title-print, #preview-product-print, #preview-price-print {
+                            margin: 0 20px;
+                            flex: 1;
+                        }` : ''}
+                    </style>
+                </head>
+                <body class="${pageClass}">
+                    <div class="preview-wrapper">
+                        <div class="preview-background"></div>
+                        <div class="preview-content">
+                            <div id="preview-title-print">${titleText.value}</div>
+                            <div id="preview-product-print">${productText.value}</div>
+                            <div id="preview-price-print">${priceText.value}</div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // إضافة المحتوى إلى الإطار
+            const iframeDoc = iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(printContent);
+            iframeDoc.close();
+            
+            // انتظار تحميل الخلفية إذا وجدت
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                
+                // إزالة الإطار بعد الطباعة
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 100);
+            }, 500); // انتظار لتحميل الصور
         }
 
         // دالة جدولة الحفظ التلقائي
@@ -807,11 +1100,12 @@
             }
         });
 
-        // زر الطباعة
-        printBtn.addEventListener('click', function() {
-            // تحديث تنسيق الطباعة قبل الطباعة مباشرة
-            createOrUpdatePrintOrientation();
-            window.print();
+        // أحداث معاينة الطباعة والطباعة
+        printBtn.addEventListener('click', showPrintPreview);
+        closePreviewBtn.addEventListener('click', closePrintPreview);
+        printNowBtn.addEventListener('click', function() {
+            printDocument();
+            closePrintPreview();
         });
 
         // عرض رسالة 
@@ -972,9 +1266,6 @@
                 updatePreview();
                 saveSettings(true);
             }
-            
-            // إنشاء ورقة أنماط الطباعة الأولية
-            createOrUpdatePrintOrientation();
         });
         
         // تنفيذ التحديث الأولي
