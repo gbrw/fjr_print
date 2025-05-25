@@ -465,7 +465,7 @@
             }
             
             .checkbox-group {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
                 gap: 8px;
             }
             
@@ -504,6 +504,72 @@
                 margin-bottom: -500px;
             }
         }
+
+        /* تحسينات إضافية للهواتف */
+        @media (max-width: 480px) {
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-control {
+                font-size: 16px;
+                padding: 12px;
+            }
+            
+            .range-container {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+            
+            .range-value {
+                align-self: center;
+            }
+        }
+
+        /* تظليل عند الضغط على العناصر التفاعلية (للهواتف) */
+        .touch-highlight {
+            transition: all 0.2s ease;
+        }
+        .touch-highlight:active {
+            background-color: rgba(79, 172, 254, 0.1);
+            transform: scale(0.98);
+        }
+
+        /* مؤشر التحميل */
+        .loading-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4facfe;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loading-text {
+            color: white;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -513,7 +579,7 @@
         </div>
         
         <div class="status-bar" id="status-bar">
-            📅 2025-05-25 | ⏰ 20:47:03 UTC | 👤 ghaith | 🖨️ نظام طباعة محسن مع عرض المحتوى
+            📅 2025-05-25 | ⏰ 21:19:31 UTC | 👤 gbrw | 🖨️ نظام طباعة محسن مع عرض المحتوى
         </div>
         
         <div class="main-content">
@@ -556,15 +622,15 @@
                     <div class="form-group">
                         <label>خصائص النص:</label>
                         <div class="checkbox-group">
-                            <div class="checkbox-item">
+                            <div class="checkbox-item touch-highlight">
                                 <input type="checkbox" id="display-bold" checked>
                                 <label for="display-bold">عريض</label>
                             </div>
-                            <div class="checkbox-item">
+                            <div class="checkbox-item touch-highlight">
                                 <input type="checkbox" id="display-italic">
                                 <label for="display-italic">مائل</label>
                             </div>
-                            <div class="checkbox-item">
+                            <div class="checkbox-item touch-highlight">
                                 <input type="checkbox" id="display-underline">
                                 <label for="display-underline">تحته خط</label>
                             </div>
@@ -610,15 +676,15 @@
                     <div class="form-group">
                         <label>خصائص النص:</label>
                         <div class="checkbox-group">
-                            <div class="checkbox-item">
+                            <div class="checkbox-item touch-highlight">
                                 <input type="checkbox" id="product-bold" checked>
                                 <label for="product-bold">عريض</label>
                             </div>
-                            <div class="checkbox-item">
+                            <div class="checkbox-item touch-highlight">
                                 <input type="checkbox" id="product-italic">
                                 <label for="product-italic">مائل</label>
                             </div>
-                            <div class="checkbox-item">
+                            <div class="checkbox-item touch-highlight">
                                 <input type="checkbox" id="product-underline">
                                 <label for="product-underline">تحته خط</label>
                             </div>
@@ -664,15 +730,15 @@
                     <div class="form-group">
                         <label>خصائص النص:</label>
                         <div class="checkbox-group">
-                            <div class="checkbox-item">
+                            <div class="checkbox-item touch-highlight">
                                 <input type="checkbox" id="price-bold" checked>
                                 <label for="price-bold">عريض</label>
                             </div>
-                            <div class="checkbox-item">
+                            <div class="checkbox-item touch-highlight">
                                 <input type="checkbox" id="price-italic">
                                 <label for="price-italic">مائل</label>
                             </div>
-                            <div class="checkbox-item">
+                            <div class="checkbox-item touch-highlight">
                                 <input type="checkbox" id="price-underline">
                                 <label for="price-underline">تحته خط</label>
                             </div>
@@ -693,8 +759,8 @@
                     <div class="form-group">
                         <label for="background-opacity">شفافية الخلفية:</label>
                         <div class="range-container">
-                            <input type="range" id="background-opacity" class="range-slider" min="0" max="100" value="80">
-                            <span class="range-value" id="opacity-value">80%</span>
+                            <input type="range" id="background-opacity" class="range-slider" min="0" max="100" value="15">
+                            <span class="range-value" id="opacity-value">15%</span>
                         </div>
                     </div>
                 </div>
@@ -705,11 +771,11 @@
                     <div class="form-group">
                         <label>اتجاه الصفحة:</label>
                         <div class="orientation-selector">
-                            <div class="orientation-option selected" data-orientation="portrait">
+                            <div class="orientation-option touch-highlight selected" data-orientation="portrait">
                                 📄 عمودي<br>
                                 <small>A4 عادي</small>
                             </div>
-                            <div class="orientation-option" data-orientation="landscape">
+                            <div class="orientation-option touch-highlight" data-orientation="landscape">
                                 📃 أفقي<br>
                                 <small>A4 مقلوب</small>
                             </div>
@@ -718,8 +784,8 @@
                     
                     <!-- أزرار الطباعة -->
                     <div class="action-buttons">
-                        <button class="btn-primary" id="print-button">🖨️ طباعة مباشرة</button>
-                        <button class="btn-secondary" id="pdf-button">📄 تحميل PDF</button>
+                        <button class="btn-primary touch-highlight" id="print-button">🖨️ طباعة مباشرة</button>
+                        <button class="btn-secondary touch-highlight" id="pdf-button">📄 تحميل PDF</button>
                     </div>
                 </div>
             </div>
@@ -745,17 +811,23 @@
         <div class="hidden-print-text" id="price-hidden"></div>
     </div>
 
+    <!-- مؤشر التحميل -->
+    <div class="loading-indicator" id="loading-indicator">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">جاري المعالجة...</div>
+    </div>
+
     <script>
         // متغيرات عامة
-        let backgroundImageUrl = '';
+        let backgroundImageUrl = 'images/alfajr.png'; // استخدام الصورة من المجلد
         let printInProgress = false;
         let currentOrientation = 'portrait';
 
         // معلومات المستخدم والنظام
         const systemInfo = {
-            user: 'ghaith',
+            user: 'gbrw',
             date: '2025-05-25',
-            time: '20:47:03',
+            time: '21:19:31',
             timezone: 'UTC'
         };
 
@@ -765,7 +837,17 @@
         function updateStatus(message) {
             const statusBar = document.getElementById('status-bar');
             const currentTime = new Date().toLocaleString('ar-SA');
-            statusBar.textContent = `📅 ${systemInfo.date} | ⏰ ${currentTime} | 👤 ${systemInfo.user} | ${message}`;
+            statusBar.textContent = `📅 ${systemInfo.date} | ⏰ ${systemInfo.time} ${systemInfo.timezone} | 👤 ${systemInfo.user} | ${message}`;
+        }
+
+        // إظهار / إخفاء مؤشر التحميل
+        function showLoading(message = 'جاري المعالجة...') {
+            document.getElementById('loading-indicator').style.display = 'flex';
+            document.querySelector('.loading-text').textContent = message;
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading-indicator').style.display = 'none';
         }
 
         // تحديث قيمة الشفافية
@@ -878,6 +960,7 @@
             const printButton = document.getElementById('print-button');
             printButton.disabled = true;
             printButton.textContent = '🔄 جاري الطباعة...';
+            showLoading('جاري تجهيز الطباعة...');
             updateStatus('🖨️ بدء عملية الطباعة...');
 
             try {
@@ -898,6 +981,7 @@
                 hiddenArea.style.opacity = '1';
                 hiddenArea.style.visibility = 'visible';
 
+                showLoading('جاري تصوير المحتوى...');
                 updateStatus('📷 تصوير المحتوى...');
                 await new Promise(resolve => setTimeout(resolve, 300));
 
@@ -931,6 +1015,7 @@
                 hiddenArea.style.zIndex = '1';
 
                 console.log(`✅ تم التصوير - الأبعاد: ${canvas.width}x${canvas.height}`);
+                showLoading('جاري إعداد نافذة الطباعة...');
                 updateStatus('🎯 تم التصوير، جاري إعداد الطباعة...');
 
                 // إنشاء صورة للطباعة
@@ -944,6 +1029,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>طباعة - ${systemInfo.user} - ${systemInfo.date} ${systemInfo.time}</title>
     <style>
         @page {
@@ -973,104 +1059,172 @@
                 max-height: 100% !important;
                 object-fit: contain !important;
             }
+            .no-print {
+                display: none !important;
+            }
         }
         body {
             margin: 0;
             padding: 0;
-            background: white;
+            background: #f0f0f0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .print-container {
             width: 100%;
-            height: 100%;
+            max-width: 800px;
             display: flex;
             justify-content: center;
             align-items: center;
+            margin: 20px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 10px;
         }
         .print-image {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
         }
+        .controls {
+            margin: 20px;
+            text-align: center;
+        }
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin: 20px;
+            color: #333;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0;
+            color: #666;
+        }
     </style>
 </head>
 <body>
+    <div class="header no-print">
+        <h1>الفجر "عروض خاصة"</h1>
+        <p>اضغط على زر الطباعة أدناه أو استخدم Ctrl+P (Cmd+P على Mac) للطباعة</p>
+    </div>
+    
     <div class="print-container">
         <img src="${imageData}" alt="محتوى الطباعة" class="print-image">
     </div>
+    
+    <div class="controls no-print">
+        <button class="btn" onclick="window.print()">🖨️ طباعة الآن</button>
+        <button class="btn" onclick="window.close()">إغلاق</button>
+    </div>
+    
+    <script>
+        window.onload = function() {
+            // توجيه المستخدم للطباعة تلقائياً بعد ثانيتين
+            setTimeout(function() {
+                // التعليق هنا إذا لم ترغب في الطباعة التلقائية
+                // window.print();
+            }, 2000);
+        };
+    </script>
 </body>
 </html>`;
 
                 printWindow.document.write(printHTML);
                 printWindow.document.close();
-
-                updateStatus('✅ جاري تنفيذ الطباعة...');
-
-                // تنفيذ الطباعة
-                printWindow.onload = function() {
-                    setTimeout(() => {
-                        console.log('🖨️ تنفيذ أمر الطباعة');
-                        printWindow.print();
-                        
-                        setTimeout(() => {
-                            printWindow.close();
-                            updateStatus('✅ تمت الطباعة بنجاح!');
-                            console.log('✅ انتهت الطباعة');
-                        }, 2000);
-                    }, 1000);
-                };
-
+                
+                hideLoading();
+                updateStatus('✅ تم فتح نافذة الطباعة بنجاح');
+                
+                console.log('🖨️ تم فتح نافذة الطباعة');
+                
             } catch (error) {
-                console.error('❌ خطأ في الطباعة:', error);
-                updateStatus('❌ حدث خطأ في الطباعة');
-                alert(`حدث خطأ في الطباعة: ${error.message}`);
+                console.error('❌ خطأ في عملية الطباعة:', error);
+                updateStatus('❌ حدث خطأ أثناء الطباعة');
+                hideLoading();
+                alert('حدث خطأ أثناء الطباعة. يرجى المحاولة مرة أخرى.');
             } finally {
-                setTimeout(() => {
-                    printInProgress = false;
-                    printButton.disabled = false;
-                    printButton.textContent = '🖨️ طباعة مباشرة';
-                }, 3000);
+                printButton.disabled = false;
+                printButton.textContent = '🖨️ طباعة مباشرة';
+                printInProgress = false;
             }
         }
 
-        // دالة إنشاء PDF
-        async function generatePDF() {
-            if (printInProgress) return;
-            
-            printInProgress = true;
-            const pdfButton = document.getElementById('pdf-button');
+        // معالج تحميل PDF
+        document.getElementById('pdf-button').addEventListener('click', async function() {
+            if (printInProgress) {
+                console.log('⏸️ تحميل PDF محجوب');
+                return;
+            }
+
+            const pdfButton = this;
             pdfButton.disabled = true;
-            pdfButton.textContent = '🔄 إنشاء PDF...';
-            updateStatus('📄 بدء إنشاء PDF...');
+            pdfButton.textContent = '🔄 جاري التحميل...';
+            showLoading('جاري إنشاء ملف PDF...');
+            updateStatus('🔍 بدء إنشاء ملف PDF...');
+            printInProgress = true;
 
             try {
+                // تحديث جميع المعاينات
                 updateAllPreviews();
-                await new Promise(resolve => setTimeout(resolve, 300));
+                await new Promise(resolve => setTimeout(resolve, 500));
 
+                // تجهيز المنطقة المخفية
                 const hiddenArea = document.getElementById('hidden-print-area');
-                
-                // جعل المنطقة مرئية للتصوير
                 hiddenArea.style.position = 'fixed';
                 hiddenArea.style.left = '0';
                 hiddenArea.style.top = '0';
                 hiddenArea.style.zIndex = '9999';
+                hiddenArea.style.opacity = '1';
+                hiddenArea.style.visibility = 'visible';
 
+                showLoading('جاري تصوير المحتوى للـ PDF...');
+                updateStatus('📷 تصوير المحتوى للـ PDF...');
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // تصوير المحتوى
                 const canvas = await html2canvas(hiddenArea, {
-                    backgroundColor: '#ffffff',
+                    backgroundColor: null,
                     scale: 3,
                     useCORS: true,
                     allowTaint: true,
-                    logging: false
+                    logging: false,
+                    width: currentOrientation === 'landscape' ? 1123 : 794,
+                    height: currentOrientation === 'landscape' ? 794 : 1123,
+                    scrollX: 0,
+                    scrollY: 0,
+                    foreignObjectRendering: true
                 });
 
-                // إخفاء المنطقة
+                // إخفاء المنطقة مرة أخرى
                 hiddenArea.style.position = 'absolute';
                 hiddenArea.style.left = '-99999px';
                 hiddenArea.style.top = '-99999px';
+                hiddenArea.style.zIndex = '1';
 
+                showLoading('جاري إنشاء ملف PDF...');
+                updateStatus('📑 إنشاء ملف PDF...');
+                
+                // إنشاء PDF
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF({
                     orientation: currentOrientation,
@@ -1078,62 +1232,77 @@
                     format: 'a4'
                 });
 
-                const imgData = canvas.toDataURL('image/png');
-                const imgWidth = currentOrientation === 'landscape' ? 297 : 210;
-                const imgHeight = currentOrientation === 'landscape' ? 210 : 297;
-                
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                // إضافة الصورة إلى PDF
+                const imgData = canvas.toDataURL('image/png', 1.0);
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-                const filename = `طباعة_${systemInfo.user}_${currentOrientation}_${timestamp}.pdf`;
+                // تحميل PDF
+                pdf.save(`الفجر_عروض_خاصة_${systemInfo.date}.pdf`);
                 
-                pdf.save(filename);
-                updateStatus('✅ تم تحميل PDF بنجاح!');
-
+                hideLoading();
+                updateStatus('✅ تم تحميل ملف PDF بنجاح!');
             } catch (error) {
-                console.error('❌ خطأ في PDF:', error);
-                updateStatus('❌ خطأ في إنشاء PDF');
+                console.error('❌ خطأ في إنشاء PDF:', error);
+                updateStatus('❌ حدث خطأ أثناء إنشاء PDF');
+                hideLoading();
+                alert('حدث خطأ أثناء إنشاء PDF. يرجى المحاولة مرة أخرى.');
             } finally {
-                printInProgress = false;
                 pdfButton.disabled = false;
                 pdfButton.textContent = '📄 تحميل PDF';
+                printInProgress = false;
             }
-        }
+        });
 
-        // ربط الأزرار
+        // إعداد معالجات الأحداث لأزرار الطباعة
         document.getElementById('print-button').addEventListener('click', enhancedPrint);
-        document.getElementById('pdf-button').addEventListener('click', generatePDF);
 
-        // منع Ctrl+P
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'p') {
-                e.preventDefault();
-                enhancedPrint();
-            }
+        // تحديث المعاينة عند تغيير أي إعداد
+        document.querySelectorAll('.form-control, .checkbox-item input').forEach(element => {
+            element.addEventListener('input', updateAllPreviews);
+            element.addEventListener('change', updateAllPreviews);
         });
 
-        // إضافة مستمعي الأحداث
-        function addEventListeners() {
-            const sections = ['display', 'product', 'price'];
+        // تحميل الصورة الافتراضية عند بدء التشغيل
+        window.addEventListener('DOMContentLoaded', function() {
+            // تحديث المعاينة لعرض الخلفية الافتراضية
+            updateAllPreviews();
+            updateStatus('🖼️ تم تحميل الخلفية الافتراضية');
             
-            sections.forEach(section => {
-                document.getElementById(section + '-text').addEventListener('input', updateAllPreviews);
-                document.getElementById(section + '-font').addEventListener('change', updateAllPreviews);
-                document.getElementById(section + '-size').addEventListener('input', updateAllPreviews);
-                document.getElementById(section + '-color').addEventListener('change', updateAllPreviews);
-                document.getElementById(section + '-bold').addEventListener('change', updateAllPreviews);
-                document.getElementById(section + '-italic').addEventListener('change', updateAllPreviews);
-                document.getElementById(section + '-underline').addEventListener('change', updateAllPreviews);
-            });
+            // تحسين تجربة المستخدم للهواتف
+            optimizeMobileExperience();
+        });
+
+        // تحسين تجربة المستخدم للهواتف عند تحميل الصفحة
+        function optimizeMobileExperience() {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                // تعديلات إضافية للهواتف
+                document.querySelectorAll('.form-control').forEach(el => {
+                    el.style.fontSize = '16px'; // تجنب التكبير التلقائي على iOS
+                });
+                
+                // تعديل حجم المعاينة للهواتف
+                const previewContainer = document.getElementById('preview-container');
+                previewContainer.style.minHeight = '280px';
+                
+                // تحسين أداء الهاتف
+                document.body.style.overflowX = 'hidden';
+            }
         }
 
-        // تهيئة النظام
-        document.addEventListener('DOMContentLoaded', function() {
-            addEventListeners();
-            updateAllPreviews();
-            updateStatus('🚀 النظام جاهز للاستخدام');
-            console.log('🎯 نظام طباعة محسن جاهز للمستخدم ghaith');
-        });
+        // تشغيل تحسينات الهاتف عند تغيير حجم النافذة
+        window.addEventListener('resize', optimizeMobileExperience);
+
+        // إضافة دعم الوضع المظلم (إذا كان الهاتف يدعم ذلك)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.style.background = 'linear-gradient(135deg, #434343 0%, #000000 100%)';
+        }
+
+        // إظهار رسالة ترحيبية
+        console.log('✨ تم تحميل نظام طباعة "الفجر" بنجاح مع خلفية افتراضية وشفافية 15%');
     </script>
 </body>
 </html>
