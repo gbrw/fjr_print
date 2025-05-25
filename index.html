@@ -138,22 +138,27 @@
             opacity: 0.9;
         }
         
-        /* تنسيق الطباعة لورقة A4 */
+        /* تنسيق الطباعة لورقة A4 - سيتم تحديثه ديناميكيًا بواسطة JavaScript */
         @page {
-            size: A4;
             margin: 0;
+            /* سيتم ضبط الاتجاه من خلال JavaScript */
         }
         
         @media print {
             html, body {
-                width: 210mm;
-                height: 297mm;
                 margin: 0;
                 padding: 0;
             }
             
-            .controls {
-                display: none;
+            /* إجبار المتصفح على طباعة الخلفيات والألوان */
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .controls, .autosave-indicator, .message {
+                display: none !important;
             }
             
             .container {
@@ -189,6 +194,15 @@
             
             .group-box h2 {
                 display: none;
+            }
+
+            .preview-background {
+                background-size: cover !important;
+                background-position: center !important;
+                /* التأكد من طباعة الخلفية */
+                display: block !important;
+                visibility: visible !important;
+                opacity: inherit !important;
             }
         }
 
@@ -593,6 +607,44 @@
         // متغير لتخزين البيانات المحملة من الصورة
         let backgroundImageData = '';
 
+        // إنشاء ورقة أنماط ديناميكية للتحكم باتجاه الطباعة
+        function createOrUpdatePrintOrientation() {
+            // إزالة أي ورقة أنماط سابقة للطباعة (إذا وجدت)
+            const existingStyle = document.getElementById('print-orientation-style');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+            
+            // تحديد الاتجاه الحالي
+            let orientation = 'portrait';
+            for (const radio of orientationRadios) {
+                if (radio.checked && radio.value === 'horizontal') {
+                    orientation = 'landscape';
+                    break;
+                }
+            }
+            
+            // إنشاء عنصر style جديد
+            const style = document.createElement('style');
+            style.id = 'print-orientation-style';
+            
+            // تعيين القواعد المناسبة
+            const rules = `
+                @page {
+                    size: A4 ${orientation};
+                }
+                @media print {
+                    html, body {
+                        width: ${orientation === 'portrait' ? '210mm' : '297mm'};
+                        height: ${orientation === 'portrait' ? '297mm' : '210mm'};
+                    }
+                }
+            `;
+            
+            style.textContent = rules;
+            document.head.appendChild(style);
+        }
+
         // دالة تحديث المعاينة
         function updatePreview() {
             // تحديث عنوان العرض
@@ -671,6 +723,9 @@
                 preview.style.display = 'block';
                 preview.style.minHeight = '400px';
             }
+            
+            // تحديث تنسيق الطباعة حسب اختيار الاتجاه
+            createOrUpdatePrintOrientation();
 
             // جدولة الحفظ التلقائي بعد التغيير
             scheduleAutoSave();
@@ -754,6 +809,8 @@
 
         // زر الطباعة
         printBtn.addEventListener('click', function() {
+            // تحديث تنسيق الطباعة قبل الطباعة مباشرة
+            createOrUpdatePrintOrientation();
             window.print();
         });
 
@@ -915,6 +972,9 @@
                 updatePreview();
                 saveSettings(true);
             }
+            
+            // إنشاء ورقة أنماط الطباعة الأولية
+            createOrUpdatePrintOrientation();
         });
         
         // تنفيذ التحديث الأولي
