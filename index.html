@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محرر النصوص التفاعلي - gbrw</title>
+    <title>محرر النصوص التفاعلي - gbrw - 2025-05-25</title>
     
-    <!-- مكتبة html2canvas فقط للحصول على نتيجة مطابقة -->
+    <!-- مكتبات متعددة لضمان الطباعة الأفقية -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     
     <style>
         * {
@@ -40,6 +42,15 @@
             font-size: 2em;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-bar {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
         }
 
         .main-content {
@@ -136,6 +147,11 @@
             border-color: #4facfe;
         }
 
+        .checkbox-item.active {
+            background: #4facfe;
+            color: white;
+        }
+
         .checkbox-item input {
             margin: 0;
             transform: scale(1.3);
@@ -221,28 +237,79 @@
             box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
         }
 
-        .print-btn {
+        .orientation-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .orientation-option {
+            padding: 15px;
+            border: 3px solid #e1f5fe;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-weight: 600;
+        }
+
+        .orientation-option:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .orientation-option.selected {
+            border-color: #4facfe;
+            background: #4facfe;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
             border: none;
-            padding: 18px 30px;
-            font-size: 1.3em;
+            padding: 15px 20px;
+            font-size: 1.1em;
             font-weight: bold;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 20px;
             -webkit-tap-highlight-color: transparent;
         }
 
-        .print-btn:hover,
-        .print-btn:active {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(238, 90, 36, 0.4);
+        .btn-secondary {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .print-btn:disabled {
+        .btn-primary:hover,
+        .btn-primary:active,
+        .btn-secondary:hover,
+        .btn-secondary:active {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
@@ -276,6 +343,7 @@
             background: white;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .preview-page {
@@ -292,6 +360,7 @@
             align-items: center;
             text-align: center;
             min-height: 400px;
+            transition: all 0.3s ease;
         }
 
         .preview-text {
@@ -302,25 +371,15 @@
             text-align: center;
         }
 
-        /* تحسينات للشاشات الكبيرة */
-        @media (min-width: 1200px) {
-            .header {
-                padding: 30px;
-                font-size: 2.5em;
-            }
-            
-            .main-content {
-                padding: 30px;
-                gap: 30px;
-            }
-            
-            .group-box {
-                padding: 25px;
-            }
-            
-            .group-title {
-                font-size: 1.4em;
-            }
+        /* حالة المعاينة الأفقية */
+        .preview-container.landscape {
+            aspect-ratio: 4/3;
+            max-height: 350px;
+        }
+
+        .preview-container.portrait {
+            aspect-ratio: 3/4;
+            max-height: 500px;
         }
 
         /* تحسينات للهواتف */
@@ -376,9 +435,15 @@
                 padding: 15px;
             }
             
-            .print-btn {
-                padding: 20px;
-                font-size: 1.4em;
+            .action-buttons {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .btn-primary,
+            .btn-secondary {
+                padding: 18px;
+                font-size: 1.2em;
             }
         }
     </style>
@@ -387,6 +452,10 @@
     <div class="container">
         <div class="header">
             محرر النصوص التفاعلي - gbrw
+        </div>
+        
+        <div class="status-bar" id="status-bar">
+            📅 تاريخ: 2025-05-25 | ⏰ وقت: 20:41:30 UTC | 👤 المستخدم: gbrw | 🖨️ نظام الطباعة الأفقية المحسن
         </div>
         
         <div class="main-content">
@@ -572,26 +641,35 @@
                     </div>
                 </div>
 
-                <!-- قسم إعدادات الصفحة -->
+                <!-- قسم إعدادات الصفحة المحسن -->
                 <div class="group-box">
-                    <div class="group-title">إعدادات الصفحة</div>
+                    <div class="group-title">إعدادات الصفحة المحسن</div>
                     <div class="form-group">
                         <label>اتجاه الصفحة:</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="orientation-landscape">
-                                <label for="orientation-landscape">أفقي</label>
+                        <div class="orientation-selector">
+                            <div class="orientation-option selected" data-orientation="portrait">
+                                📄 عمودي<br>
+                                <small>A4 عادي</small>
+                            </div>
+                            <div class="orientation-option" data-orientation="landscape">
+                                📃 أفقي<br>
+                                <small>A4 مقلوب</small>
                             </div>
                         </div>
                     </div>
-                    <button class="print-btn" id="print-button">🖨️ طباعة مطابقة للمعاينة</button>
+                    
+                    <!-- أزرار الطباعة المحسنة -->
+                    <div class="action-buttons">
+                        <button class="btn-primary" id="print-button">🖨️ طباعة فورية</button>
+                        <button class="btn-secondary" id="pdf-button">📄 تحميل PDF</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- قسم المعاينة -->
+            <!-- قسم المعاينة المحسن -->
             <div class="preview-section">
                 <div class="preview-title">المعاينة الدقيقة</div>
-                <div class="preview-container" id="preview-container">
+                <div class="preview-container portrait" id="preview-container">
                     <div class="preview-page" id="preview-page">
                         <div class="preview-text" id="display-preview"></div>
                         <div class="preview-text" id="product-preview"></div>
@@ -603,16 +681,33 @@
     </div>
 
     <script>
-        // متغيرات عامة
+        // متغيرات عامة محسنة
         let backgroundImageUrl = '';
         let printInProgress = false;
+        let currentOrientation = 'portrait';
 
-        console.log('🚀 النظام بدأ للمستخدم: gbrw في 2025-05-25 20:32:35');
+        // معلومات النظام
+        const userInfo = {
+            name: 'gbrw',
+            date: '2025-05-25',
+            time: '20:41:30',
+            timezone: 'UTC'
+        };
+
+        console.log(`🚀 نظام الطباعة الأفقية المحسن - المستخدم: ${userInfo.name} - ${userInfo.date} ${userInfo.time} ${userInfo.timezone}`);
+
+        // تحديث شريط الحالة
+        function updateStatusBar(message) {
+            const statusBar = document.getElementById('status-bar');
+            const timestamp = new Date().toLocaleString('ar-SA');
+            statusBar.textContent = `📅 ${userInfo.date} | ⏰ ${timestamp} | 👤 ${userInfo.name} | ${message}`;
+        }
 
         // تحديث قيمة الشفافية
         document.getElementById('background-opacity').addEventListener('input', function() {
             document.getElementById('opacity-value').textContent = this.value + '%';
             updatePreview();
+            updateStatusBar('🎨 تم تحديث شفافية الخلفية');
         });
 
         // معالج تحميل الصورة
@@ -623,13 +718,30 @@
                 reader.onload = function(e) {
                     backgroundImageUrl = e.target.result;
                     updatePreview();
-                    console.log('✅ تم تحميل صورة الخلفية');
+                    updateStatusBar('🖼️ تم تحميل صورة الخلفية بنجاح');
+                    console.log('✅ تم تحميل صورة الخلفية:', file.name);
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // تطبيق التنسيق على النص (نفس التنسيق للمعاينة والطباعة)
+        // معالج اختيار الاتجاه المحسن
+        document.querySelectorAll('.orientation-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // إزالة التحديد السابق
+                document.querySelectorAll('.orientation-option').forEach(opt => opt.classList.remove('selected'));
+                
+                // تحديد الخيار الجديد
+                this.classList.add('selected');
+                currentOrientation = this.dataset.orientation;
+                
+                updatePreview();
+                updateStatusBar(`📄 تم تغيير الاتجاه إلى: ${currentOrientation === 'landscape' ? 'أفقي' : 'عمودي'}`);
+                console.log('🔄 تم تغيير اتجاه الصفحة إلى:', currentOrientation);
+            });
+        });
+
+        // تطبيق التنسيق على النص
         function applyTextStyle(section, element) {
             const text = document.getElementById(section + '-text').value;
             const font = document.getElementById(section + '-font').value;
@@ -655,9 +767,10 @@
             }
         }
 
-        // تحديث المعاينة
+        // تحديث المعاينة المحسن
         function updatePreview() {
             const previewPage = document.getElementById('preview-page');
+            const previewContainer = document.getElementById('preview-container');
             const opacity = document.getElementById('background-opacity').value / 100;
             
             // تطبيق الخلفية
@@ -675,20 +788,14 @@
             applyTextStyle('product', document.getElementById('product-preview'));
             applyTextStyle('price', document.getElementById('price-preview'));
 
-            // تحديث اتجاه الصفحة
-            const isLandscape = document.getElementById('orientation-landscape').checked;
-            const container = document.getElementById('preview-container');
-            if (isLandscape) {
-                container.style.aspectRatio = '4/3';
-            } else {
-                container.style.aspectRatio = '3/4';
-            }
+            // تحديث اتجاه المعاينة
+            previewContainer.className = `preview-container ${currentOrientation}`;
 
-            console.log('🔄 تم تحديث المعاينة');
+            console.log('🔄 تم تحديث المعاينة - الاتجاه:', currentOrientation);
         }
 
-        // دالة الطباعة التي تصور المعاينة مباشرة
-        async function printExactPreview() {
+        // دالة الطباعة المحسنة للاتجاه الأفقي
+        async function advancedPrint() {
             if (printInProgress) {
                 console.log('⏸️ طباعة محجوبة - عملية سابقة جارية');
                 return;
@@ -697,157 +804,306 @@
             printInProgress = true;
             const printButton = document.getElementById('print-button');
             printButton.disabled = true;
-            printButton.textContent = '🔄 جاري التصوير والطباعة...';
+            printButton.textContent = '🔄 جاري الطباعة...';
+            
+            updateStatusBar('🖨️ بدء عملية الطباعة المحسنة...');
 
             try {
-                console.log('📷 بدء تصوير المعاينة...');
+                console.log(`📄 بدء الطباعة المحسنة - الاتجاه: ${currentOrientation}`);
                 
                 // تحديث المعاينة أولاً
                 updatePreview();
-                
-                // انتظار قصير للتأكد من التحديث
                 await new Promise(resolve => setTimeout(resolve, 300));
 
                 // الحصول على عنصر المعاينة
                 const previewElement = document.getElementById('preview-page');
 
-                // تصوير المعاينة بدقة عالية
+                // تحديد أبعاد التصوير بناءً على الاتجاه
+                let captureWidth, captureHeight, canvasScale;
+                
+                if (currentOrientation === 'landscape') {
+                    captureWidth = 1123; // A4 أفقي عرض
+                    captureHeight = 794; // A4 أفقي ارتفاع
+                    canvasScale = 4; // دقة عالية جداً للأفقي
+                } else {
+                    captureWidth = 794; // A4 عمودي عرض
+                    captureHeight = 1123; // A4 عمودي ارتفاع
+                    canvasScale = 3; // دقة عالية للعمودي
+                }
+
+                updateStatusBar('📷 جاري تصوير المحتوى بدقة عالية...');
+
+                // تصوير المعاينة بدقة محسنة
                 const canvas = await html2canvas(previewElement, {
                     backgroundColor: null,
-                    scale: 3, // دقة عالية جداً
+                    scale: canvasScale,
                     useCORS: true,
                     allowTaint: true,
                     logging: false,
-                    width: previewElement.offsetWidth,
-                    height: previewElement.offsetHeight,
+                    width: captureWidth / canvasScale,
+                    height: captureHeight / canvasScale,
                     scrollX: 0,
-                    scrollY: 0
+                    scrollY: 0,
+                    foreignObjectRendering: true
                 });
 
-                console.log('✅ تم تصوير المعاينة بنجاح');
+                console.log(`✅ تم تصوير المحتوى - الأبعاد: ${canvas.width}x${canvas.height}`);
+                updateStatusBar('🎯 تم التصوير بنجاح، جاري إعداد الطباعة...');
 
-                // إنشاء صورة من Canvas
+                // إنشاء صورة للطباعة
                 const imageData = canvas.toDataURL('image/png', 1.0);
 
-                // إنشاء نافذة طباعة جديدة
-                const printWindow = window.open('', '_blank');
+                // إنشاء نافذة طباعة محسنة
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
                 
-                // تحديد اتجاه الصفحة
-                const isLandscape = document.getElementById('orientation-landscape').checked;
-                
-                // كتابة HTML للطباعة
+                // تحديد CSS محسن للطباعة الأفقية
+                const printCSS = `
+                    @page {
+                        size: A4 ${currentOrientation};
+                        margin: 0;
+                    }
+                    @media print {
+                        @page {
+                            size: A4 ${currentOrientation};
+                            margin: 0 !important;
+                        }
+                        body {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
+                        .print-container {
+                            width: 100vw !important;
+                            height: 100vh !important;
+                            display: flex !important;
+                            justify-content: center !important;
+                            align-items: center !important;
+                            page-break-inside: avoid !important;
+                        }
+                        .print-image {
+                            max-width: 100% !important;
+                            max-height: 100% !important;
+                            width: auto !important;
+                            height: auto !important;
+                            object-fit: contain !important;
+                            page-break-inside: avoid !important;
+                        }
+                    }
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        background: white;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                        font-family: Arial, sans-serif;
+                    }
+                    .print-container {
+                        width: 100%;
+                        height: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                    .print-image {
+                        max-width: 100%;
+                        max-height: 100%;
+                        object-fit: contain;
+                    }
+                    .print-info {
+                        position: absolute;
+                        bottom: 5mm;
+                        right: 5mm;
+                        font-size: 8pt;
+                        color: #666;
+                        display: none;
+                    }
+                    @media print {
+                        .print-info {
+                            display: block;
+                        }
+                    }
+                `;
+
+                // كتابة HTML محسن للطباعة
                 printWindow.document.write(`
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-    <title>طباعة - gbrw - ${new Date().toLocaleString('ar-SA')}</title>
-    <style>
-        @page {
-            size: A4 ${isLandscape ? 'landscape' : 'portrait'};
-            margin: 0;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: white;
-        }
-        img {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-        }
-        @media print {
-            body {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            img {
-                page-break-inside: avoid;
-            }
-        }
-    </style>
+    <meta charset="UTF-8">
+    <title>طباعة ${currentOrientation === 'landscape' ? 'أفقية' : 'عمودية'} - ${userInfo.name} - ${userInfo.date}</title>
+    <style>${printCSS}</style>
 </head>
 <body>
-    <img src="${imageData}" alt="طباعة المحتوى">
+    <div class="print-container">
+        <img src="${imageData}" alt="محتوى الطباعة" class="print-image">
+    </div>
+    <div class="print-info">
+        ${userInfo.name} | ${userInfo.date} ${userInfo.time} | ${currentOrientation === 'landscape' ? 'أفقي' : 'عمودي'}
+    </div>
 </body>
 </html>`);
 
                 printWindow.document.close();
 
+                updateStatusBar('✅ تم إعداد نافذة الطباعة، جاري تنفيذ الطباعة...');
+
                 // انتظار تحميل الصورة ثم الطباعة
                 printWindow.onload = function() {
                     setTimeout(() => {
-                        console.log('🖨️ بدء الطباعة...');
+                        console.log(`🖨️ تنفيذ الطباعة ${currentOrientation === 'landscape' ? 'الأفقية' : 'العمودية'}`);
+                        updateStatusBar('🖨️ تنفيذ الطباعة الآن...');
+                        
                         printWindow.print();
                         
-                        // إغلاق النافذة بعد الطباعة
                         setTimeout(() => {
                             printWindow.close();
+                            updateStatusBar('✅ تمت الطباعة بنجاح!');
                             console.log('✅ انتهت الطباعة وتم إغلاق النافذة');
-                        }, 1000);
-                    }, 500);
+                        }, 1500);
+                    }, 800);
                 };
 
             } catch (error) {
                 console.error('❌ خطأ في الطباعة:', error);
-                alert('حدث خطأ في الطباعة. يرجى المحاولة مرة أخرى.\nتفاصيل الخطأ: ' + error.message);
+                updateStatusBar('❌ حدث خطأ في الطباعة');
+                alert(`حدث خطأ في الطباعة.\nتفاصيل الخطأ: ${error.message}\nيرجى المحاولة مرة أخرى أو تجربة PDF.`);
             } finally {
-                // إعادة تفعيل الزر
                 setTimeout(() => {
                     printInProgress = false;
                     printButton.disabled = false;
-                    printButton.textContent = '🖨️ طباعة مطابقة للمعاينة';
+                    printButton.textContent = '🖨️ طباعة فورية';
                     console.log('🔓 تم رفع قفل الطباعة');
-                }, 2000);
+                }, 2500);
             }
         }
 
-        // ربط زر الطباعة
-        document.getElementById('print-button').addEventListener('click', printExactPreview);
+        // دالة إنشاء PDF محسنة
+        async function generateAdvancedPDF() {
+            if (printInProgress) return;
+            
+            printInProgress = true;
+            const pdfButton = document.getElementById('pdf-button');
+            pdfButton.disabled = true;
+            pdfButton.textContent = '🔄 إنشاء PDF...';
+            
+            updateStatusBar('📄 بدء إنشاء ملف PDF...');
 
-        // منع اختصار Ctrl+P من التداخل
+            try {
+                updatePreview();
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const previewElement = document.getElementById('preview-page');
+                
+                updateStatusBar('📷 تصوير المحتوى لـ PDF...');
+                
+                const canvas = await html2canvas(previewElement, {
+                    backgroundColor: '#ffffff',
+                    scale: 4,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false
+                });
+
+                updateStatusBar('📋 إنشاء ملف PDF...');
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: currentOrientation,
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = currentOrientation === 'landscape' ? 297 : 210;
+                const imgHeight = currentOrientation === 'landscape' ? 210 : 297;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+                const filename = `طباعة_${userInfo.name}_${currentOrientation}_${timestamp}.pdf`;
+                
+                pdf.save(filename);
+                
+                updateStatusBar('✅ تم تحميل PDF بنجاح!');
+                console.log('✅ تم إنشاء PDF:', filename);
+
+            } catch (error) {
+                console.error('❌ خطأ في PDF:', error);
+                updateStatusBar('❌ خطأ في إنشاء PDF');
+                alert('حدث خطأ في إنشاء PDF. يرجى المحاولة مرة أخرى.');
+            } finally {
+                printInProgress = false;
+                pdfButton.disabled = false;
+                pdfButton.textContent = '📄 تحميل PDF';
+            }
+        }
+
+        // ربط الأزرار
+        document.getElementById('print-button').addEventListener('click', advancedPrint);
+        document.getElementById('pdf-button').addEventListener('click', generateAdvancedPDF);
+
+        // منع اختصار Ctrl+P
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 'p') {
                 e.preventDefault();
-                printExactPreview();
+                advancedPrint();
             }
         });
 
-        // إضافة مستمعي الأحداث للتحديث الفوري
-        function addEventListeners() {
+        // إضافة مستمعي الأحداث المحسنة
+        function addAdvancedEventListeners() {
             const sections = ['display', 'product', 'price'];
             
             sections.forEach(section => {
-                document.getElementById(section + '-text').addEventListener('input', updatePreview);
-                document.getElementById(section + '-font').addEventListener('change', updatePreview);
-                document.getElementById(section + '-size').addEventListener('input', updatePreview);
-                document.getElementById(section + '-color').addEventListener('change', updatePreview);
-                document.getElementById(section + '-bold').addEventListener('change', updatePreview);
-                document.getElementById(section + '-italic').addEventListener('change', updatePreview);
-                document.getElementById(section + '-underline').addEventListener('change', updatePreview);
+                document.getElementById(section + '-text').addEventListener('input', () => {
+                    updatePreview();
+                    updateStatusBar('✏️ تم تحديث النص');
+                });
+                document.getElementById(section + '-font').addEventListener('change', () => {
+                    updatePreview();
+                    updateStatusBar('🔤 تم تغيير نوع الخط');
+                });
+                document.getElementById(section + '-size').addEventListener('input', () => {
+                    updatePreview();
+                    updateStatusBar('📏 تم تغيير حجم الخط');
+                });
+                document.getElementById(section + '-color').addEventListener('change', () => {
+                    updatePreview();
+                    updateStatusBar('🎨 تم تغيير لون النص');
+                });
+                document.getElementById(section + '-bold').addEventListener('change', () => {
+                    updatePreview();
+                    updateStatusBar('💪 تم تغيير خاصية العريض');
+                });
+                document.getElementById(section + '-italic').addEventListener('change', () => {
+                    updatePreview();
+                    updateStatusBar('📐 تم تغيير خاصية المائل');
+                });
+                document.getElementById(section + '-underline').addEventListener('change', () => {
+                    updatePreview();
+                    updateStatusBar('➖ تم تغيير خاصية التحتي');
+                });
             });
-
-            document.getElementById('orientation-landscape').addEventListener('change', updatePreview);
             
-            console.log('🎧 تم تفعيل جميع مستمعي الأحداث');
+            console.log('🎧 تم تفعيل جميع مستمعي الأحداث المحسنة');
         }
 
-        // تهيئة الصفحة
+        // تهيئة النظام المحسن
         document.addEventListener('DOMContentLoaded', function() {
-            addEventListeners();
+            addAdvancedEventListeners();
             updatePreview();
-            console.log('🎯 النظام جاهز للمستخدم gbrw');
-            console.log('📊 معلومات المتصفح:', {
+            updateStatusBar('🚀 النظام جاهز للاستخدام');
+            
+            console.log('🎯 النظام المحسن جاهز للمستخدم:', userInfo.name);
+            console.log('📊 معلومات النظام:', {
                 userAgent: navigator.userAgent,
                 language: navigator.language,
                 platform: navigator.platform,
-                cookieEnabled: navigator.cookieEnabled
+                screen: `${screen.width}x${screen.height}`,
+                orientation: currentOrientation
             });
         });
     </script>
